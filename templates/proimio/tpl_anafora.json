@@ -1,0 +1,37 @@
+{
+  "template_id": "tpl_anafora",
+  "name": "Αναφορά",
+  "description": "Στοιχείο 'Έχοντας υπόψη' — επιλέγεις τύπο νομοθεσίας και γράφεις παραγράφους",
+  "fields": [
+    {
+      "field_id": "typos",
+      "label": "Τύπος πράξης",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "Σύνταγμα", "value": "syntagma"},
+        {"label": "Νόμος", "value": "nomos"},
+        {"label": "Π.Δ.", "value": "pd"},
+        {"label": "Υπουργική Απόφαση", "value": "ya"},
+        {"label": "Κ.Υ.Α.", "value": "kya"},
+        {"label": "Οδηγία Ε.Ε.", "value": "odigia"},
+        {"label": "Κανονισμός Ε.Ε.", "value": "kanonismos"},
+        {"label": "Απόφαση", "value": "apofasi"},
+        {"label": "Άλλο", "value": "allo"}
+      ],
+      "help_text": "Τι είδους νομοθεσία είναι η αναφορά"
+    }
+  ],
+  "child_slots": [
+    {
+      "slot_id": "keimena",
+      "label": "Παράγραφοι",
+      "allowed_template_ids": ["tpl_paragrafos"],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "<div class='anafora'>{% if typos %}{% set lbl = {'syntagma': 'Σύνταγμα', 'nomos': 'Νόμος', 'pd': 'Π.Δ.', 'ya': 'Υπ. Απόφαση', 'kya': 'Κ.Υ.Α.', 'odigia': 'Οδηγία Ε.Ε.', 'kanonismos': 'Κανονισμός Ε.Ε.', 'apofasi': 'Απόφαση', 'allo': 'Άλλο'} %}<span class='anafora-typos'>[{{ lbl.get(typos, typos) }}]</span> {% endif %}{% for c in children %}{{ c }}{% endfor %}</div>",
+  "metadata": {"category": "προοίμιο"}
+}

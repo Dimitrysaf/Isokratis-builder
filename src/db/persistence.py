@@ -2,6 +2,8 @@
 
 import json
 import sqlite3
+import uuid
+from datetime import datetime
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 
@@ -55,6 +57,19 @@ class DocumentRepository:
             json.dumps(node.metadata),
             position,
         ))
+
+        # Populate FTS index (best-effort)
+        try:
+            cursor.execute("DELETE FROM nodes_fts WHERE node_id = ?", (node.node_id,))
+            content_text = " ".join(
+                str(v) for v in node.data.values() if isinstance(v, (str, int, float)) and v
+            )
+            cursor.execute(
+                "INSERT INTO nodes_fts(node_id, content, metadata) VALUES (?, ?, ?)",
+                (node.node_id, content_text, ""),
+            )
+        except Exception:
+            pass
 
         for idx, child in enumerate(node.children):
             self._save_nodes_recursive(cursor, child, node.node_id, idx)
@@ -269,3 +284,59 @@ class ReferenceRepository:
         refs = [Reference.from_dict(dict(row)) for row in cursor.fetchall()]
         conn.close()
         return refs
+
+
+class VersionRepository:
+    """Save and restore document version snapshots."""
+
+    def __init__(self, db_path: str):
+        self.db_path = db_path
+
+    def save_version(self, doc: Document, note: str = "") -> str:
+        """Snapshot the current document state. Returns version_id."""
+        version_id = str(uuid.uuid4())
+        conn = get_connection(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM document_versions WHERE doc_id = ?", (doc.doc_id,))
+        row = cursor.fetchone()
+        count = row["cnt"] if row else 0
+
+        cursor.execute("""
+            INSERT INTO document_versions (version_id, doc_id, version_number, snapshot, created_at, note)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            version_id,
+            doc.doc_id,
+            count + 1,
+            json.dumps(doc.to_dict()),
+            datetime.now().isoformat(),
+            note,
+        ))
+        conn.commit()
+        conn.close()
+        return version_id
+
+    def list_versions(self, doc_id: str) -> List[Dict[str, Any]]:
+        """List all snapshots for a document, newest first."""
+        conn = get_connection(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT version_id, version_number, created_at, note
+            FROM document_versions WHERE doc_id = ?
+            ORDER BY version_number DESC
+        """, (doc_id,))
+        versions = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return versions
+
+    def load_version(self, version_id: str) -> Optional[Document]:
+        """Load a specific version snapshot as a Document."""
+        conn = get_connection(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT snapshot FROM document_versions WHERE version_id = ?", (version_id,))
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            return Document.from_dict(json.loads(row["snapshot"]))
+        return None

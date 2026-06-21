@@ -1,0 +1,60 @@
+{
+  "template_id": "tpl_poios",
+  "name": "Ποιος",
+  "description": "Ο θεσμός που εκδίδει την πράξη και τι κάνει (Αποφασίζει, Εκδίδει κλπ)",
+  "fields": [
+    {
+      "field_id": "thesmos",
+      "label": "Θεσμός",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "Υπουργός", "value": "ypoyrgos"},
+        {"label": "Αναπλ. Υπουργός", "value": "anaplirotis"},
+        {"label": "Γεν. Γραμματέας", "value": "gg"},
+        {"label": "Υπουργικό Συμβούλιο", "value": "symboylio"},
+        {"label": "Πρόεδρος Δημοκρατίας", "value": "proedros"},
+        {"label": "Βουλή", "value": "voyli"},
+        {"label": "Άλλο", "value": "allo"}
+      ],
+      "help_text": "Ποιος θεσμός εκδίδει ή υπογράφει"
+    },
+    {
+      "field_id": "armodiothta",
+      "label": "Αρμοδιότητα",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. Οικονομικών, Παιδείας — αφήστε κενό αν δεν χρειάζεται"
+    },
+    {
+      "field_id": "energeia",
+      "label": "Τι κάνει",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "Αποφασίζει", "value": "apofasizoume"},
+        {"label": "Εκδίδει", "value": "ekdidomme"},
+        {"label": "Διατάσσει", "value": "diatassoume"},
+        {"label": "Εγκρίνει", "value": "egkrinoume"},
+        {"label": "Ορίζει", "value": "orizoume"},
+        {"label": "Άλλο", "value": "allo"}
+      ],
+      "help_text": "Τι πράξη εκτελεί ο θεσμός"
+    }
+  ],
+  "child_slots": [
+    {
+      "slot_id": "keimena",
+      "label": "Πρόσθετο κείμενο",
+      "allowed_template_ids": ["tpl_paragrafos"],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "<div class='poios'>{% if thesmos %}{% set t = {'ypoyrgos': 'Ο ΥΠΟΥΡΓΟΣ', 'anaplirotis': 'Ο ΑΝΑΠΛ. ΥΠΟΥΡΓΟΣ', 'gg': 'Ο ΓΕΝ. ΓΡΑΜΜΑΤΕΑΣ', 'symboylio': 'ΤΟ ΥΠΟΥΡΓΙΚΟ ΣΥΜΒΟΥΛΙΟ', 'proedros': 'Ο ΠΡΟΕΔΡΟΣ ΤΗΣ ΕΛΛΗΝΙΚΗΣ ΔΗΜΟΚΡΑΤΙΑΣ', 'voyli': 'Η ΒΟΥΛΗ', 'allo': ''} %}<p class='poios-titlos'><strong>{{ t.get(thesmos, thesmos) }}{% if armodiothta %} {{ armodiothta | upper }}{% endif %}</strong></p>{% endif %}{% if energeia %}{% set e = {'apofasizoume': 'ΑΠΟΦΑΣΙΖΟΥΜΕ', 'ekdidomme': 'ΕΚΔΙΔΟΜΕΝ', 'diatassoume': 'ΔΙΑΤΑΣΣΟΥΜΕ', 'egkrinoume': 'ΕΓΚΡΙΝΟΥΜΕ', 'orizoume': 'ΟΡΙΖΟΥΜΕ', 'allo': ''} %}<p class='energeia'><strong>{{ e.get(energeia, energeia) }}:</strong></p>{% endif %}{% for c in children %}{{ c }}{% endfor %}</div>",
+  "metadata": {"category": "προοίμιο"}
+}

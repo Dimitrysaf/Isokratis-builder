@@ -74,6 +74,19 @@ def create_schema(db_path: str) -> None:
         )
     """)
 
+    # Document version snapshots (for history / restore)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS document_versions (
+            version_id TEXT PRIMARY KEY,
+            doc_id TEXT NOT NULL,
+            version_number INTEGER NOT NULL,
+            snapshot TEXT NOT NULL,
+            created_at TEXT,
+            note TEXT,
+            FOREIGN KEY (doc_id) REFERENCES documents(doc_id)
+        )
+    """)
+
     conn.commit()
     conn.close()
 

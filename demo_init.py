@@ -12,20 +12,18 @@ from src.models import Document, Node, Template
 
 
 def load_default_templates(template_repo: TemplateRepository, templates_dir: Path):
-    """Load default templates from JSON file."""
-    templates_file = templates_dir / "default_templates.json"
-    
-    if not templates_file.exists():
-        print(f"No templates file at {templates_file}")
+    """Load all *.json template files from the templates directory."""
+    json_files = sorted(templates_dir.rglob("*.json"))
+    if not json_files:
+        print(f"No template files found in {templates_dir}")
         return
-    
-    with open(templates_file, "r", encoding="utf-8") as f:
-        templates_data = json.load(f)
-    
-    for tpl_data in templates_data:
+
+    for path in json_files:
+        with open(path, "r", encoding="utf-8") as f:
+            tpl_data = json.load(f)
         template = Template.from_dict(tpl_data)
         template_repo.save_template(template)
-        print(f"✓ Loaded template: {template.name}")
+        print(f"✓ Loaded template: {template.name}  ({path.name})")
 
 
 def create_sample_document(doc_repo: DocumentRepository, template_repo: TemplateRepository) -> str:

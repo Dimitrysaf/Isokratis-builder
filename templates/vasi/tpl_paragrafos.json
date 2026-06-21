@@ -1,0 +1,19 @@
+{
+  "template_id": "tpl_paragrafos",
+  "name": "Παράγραφος",
+  "description": "Απλή παράγραφος κειμένου — χρησιμοποιείται μέσα σε Αναφορά, Ποιος, κ.ά.",
+  "fields": [
+    {
+      "field_id": "keimeno",
+      "label": "Κείμενο",
+      "field_type": "textarea",
+      "required": true,
+      "default_value": null,
+      "options": [],
+      "help_text": "Κείμενο παραγράφου"
+    }
+  ],
+  "child_slots": [],
+  "render_template": "<p class='para'>{{ keimeno }}</p>",
+  "metadata": {"category": "βασικά"}
+}
