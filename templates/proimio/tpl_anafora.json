@@ -1,37 +1,75 @@
 {
   "template_id": "tpl_anafora",
-  "name": "Αναφορά",
-  "description": "Στοιχείο 'Έχοντας υπόψη' — επιλέγεις τύπο νομοθεσίας και γράφεις παραγράφους",
+  "name": "Αναφορά (Έχοντας υπόψη)",
+  "description": "Ένα στοιχείο στο νομικό υπόβαθρο — επιλέγεις τύπο και συμπληρώνεις τα στοιχεία.",
   "fields": [
     {
       "field_id": "typos",
-      "label": "Τύπος πράξης",
+      "label": "Τύπος αναφοράς",
       "field_type": "select",
       "required": false,
       "default_value": "",
       "options": [
-        {"label": "Σύνταγμα", "value": "syntagma"},
-        {"label": "Νόμος", "value": "nomos"},
-        {"label": "Π.Δ.", "value": "pd"},
-        {"label": "Υπουργική Απόφαση", "value": "ya"},
-        {"label": "Κ.Υ.Α.", "value": "kya"},
-        {"label": "Οδηγία Ε.Ε.", "value": "odigia"},
-        {"label": "Κανονισμός Ε.Ε.", "value": "kanonismos"},
-        {"label": "Απόφαση", "value": "apofasi"},
-        {"label": "Άλλο", "value": "allo"}
+        {"label": "— Επιλέξτε —",                                  "value": ""},
+        {"label": "Σύνταγμα",                                      "value": "syntagma"},
+        {"label": "Διεθνές / ΕΕ — Οδηγία",                        "value": "ee_odigia"},
+        {"label": "Διεθνές / ΕΕ — Κανονισμός",                    "value": "ee_kanonismos"},
+        {"label": "Νόμος — Κεντρική Εξουσιοδότηση",               "value": "nomos_exousiod"},
+        {"label": "Π.Δ. Διορισμού Υπουργών",                      "value": "pd_diorismos"},
+        {"label": "Απόφαση Μεταβίβασης Εξουσίας",                 "value": "metavivasi"},
+        {"label": "Προγενέστερη Νομοθεσία (Ν. / ΥΑ / ΚΥΑ)",      "value": "proigeni"},
+        {"label": "Τροποποιημένη / Ισχύουσα Απόφαση",             "value": "tropopoiisi"},
+        {"label": "Πρακτικό ΣτΕ (Γνωμοδότηση)",                   "value": "gnomodoitisi"},
+        {"label": "Γνώμη / Εισήγηση Ανεξάρτητης Αρχής",           "value": "gnomi_aai"},
+        {"label": "Εσωτερικό Έγγραφο / Υπηρεσιακό Σημείωμα",      "value": "eswterikoEgg"},
+        {"label": "Εισήγηση ΓΔΟΥ",                                 "value": "gdou"},
+        {"label": "Ρήτρα Κόστους (δαπάνη / μη δαπάνη)",           "value": "ritra_kostous"},
+        {"label": "Άλλο",                                          "value": "allo"}
       ],
-      "help_text": "Τι είδους νομοθεσία είναι η αναφορά"
-    }
-  ],
-  "child_slots": [
+      "help_text": ""
+    },
     {
-      "slot_id": "keimena",
-      "label": "Παράγραφοι",
-      "allowed_template_ids": ["tpl_paragrafos"],
-      "min_count": 0,
-      "max_count": 0
+      "field_id": "ar",
+      "label": "Αριθμός / Κωδικός",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. 4622/2019, 2016/679 (ΕΕ), υπ' αρ. 12345/2024"
+    },
+    {
+      "field_id": "arthro",
+      "label": "Άρθρο",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. 49, 49 παρ. 3 — αφήστε κενό αν δεν χρειάζεται"
+    },
+    {
+      "field_id": "titlos",
+      "label": "Τίτλος / Περιγραφή",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. «Επιτελικό Κράτος: οργάνωση, λειτουργία...»"
+    },
+    {
+      "field_id": "prokaleitai_dapani",
+      "label": "Προκαλείται δαπάνη;",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "— (αφήστε κενό για άλλους τύπους) —",          "value": ""},
+        {"label": "Δεν προκαλείται δαπάνη",                        "value": "oxi"},
+        {"label": "Προκαλείται δαπάνη",                            "value": "nai"}
+      ],
+      "help_text": "Μόνο για τύπο «Ρήτρα Κόστους»"
     }
   ],
-  "render_template": "<div class='anafora'>{% if typos %}{% set lbl = {'syntagma': 'Σύνταγμα', 'nomos': 'Νόμος', 'pd': 'Π.Δ.', 'ya': 'Υπ. Απόφαση', 'kya': 'Κ.Υ.Α.', 'odigia': 'Οδηγία Ε.Ε.', 'kanonismos': 'Κανονισμός Ε.Ε.', 'apofasi': 'Απόφαση', 'allo': 'Άλλο'} %}<span class='anafora-typos'>[{{ lbl.get(typos, typos) }}]</span> {% endif %}{% for c in children %}{{ c }}{% endfor %}</div>",
+  "child_slots": [],
+  "render_template": "<p class='anafora-item'>{% set lbl = {'syntagma': 'Τις διατάξεις του Συντάγματος', 'ee_odigia': 'Την Οδηγία (ΕΕ)', 'ee_kanonismos': 'Τον Κανονισμό (ΕΕ)', 'nomos_exousiod': 'Τις διατάξεις', 'pd_diorismos': 'Το Π.Δ.', 'metavivasi': 'Την υπ\\' αρ. [...] απόφαση ανάθεσης αρμοδιοτήτων', 'proigeni': 'Τον ν. / Την υπ\\' αρ. [...] απόφαση', 'tropopoiisi': 'Την υπ\\' αρ. [...] απόφαση, όπως τροποποιήθηκε, συμπληρώθηκε και ισχύει', 'gnomodoitisi': 'Το υπ\\' αρ. [...] Πρακτικό Επεξεργασίας του ΣτΕ', 'gnomi_aai': 'Τη γνώμη / εισήγηση', 'eswterikoEgg': 'Το υπ\\' αρ. [...] υπηρεσιακό σημείωμα', 'gdou': 'Την εισήγηση του Γεν. Διευθυντή Οικονομικών Υπηρεσιών (ΓΔΟΥ)', 'ritra_kostous': 'Το γεγονός ότι από τις διατάξεις της παρούσας', 'allo': ''} %}{% if typos == 'ritra_kostous' %}{{ lbl.get(typos,'') }} {% if prokaleitai_dapani == 'oxi' %}δεν προκαλείται δαπάνη σε βάρος του κρατικού προϋπολογισμού{% elif prokaleitai_dapani == 'nai' %}προκαλείται δαπάνη σε βάρος του κρατικού προϋπολογισμού{% endif %}{% else %}{{ lbl.get(typos,'') }}{% if arthro %} του άρθρου {{ arthro }}{% endif %}{% if ar %} {{ ar }}{% endif %}{% if titlos %} «{{ titlos }}»{% endif %}{% endif %}</p>",
   "metadata": {"category": "προοίμιο"}
 }

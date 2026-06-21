@@ -1,38 +1,44 @@
 {
   "template_id": "tpl_poios",
-  "name": "Ποιος",
-  "description": "Ο θεσμός που εκδίδει ή υπογράφει την πράξη.",
+  "name": "Ποιος (Φορέας)",
+  "description": "Το θεσμικό όργανο που έχει την πρωτοβουλία ή εξουσία έκδοσης.",
   "fields": [
     {
       "field_id": "thesmos",
-      "label": "Θεσμός",
+      "label": "Θεσμικό Όργανο",
       "field_type": "select",
       "required": false,
       "default_value": "",
       "options": [
-        {"label": "— Επιλέξτε —",                 "value": ""},
-        {"label": "Υπουργός",                      "value": "ypoyrgos"},
-        {"label": "Αναπλ. Υπουργός",               "value": "anaplirotis"},
-        {"label": "Υφυπουργός",                    "value": "yfypourgos"},
-        {"label": "Γεν. Γραμματέας",               "value": "gg"},
-        {"label": "Υπουργικό Συμβούλιο",           "value": "symboylio"},
-        {"label": "Πρόεδρος Δημοκρατίας",          "value": "proedros"},
-        {"label": "Βουλή",                         "value": "voyli"},
-        {"label": "Άλλο",                          "value": "allo"}
+        {"label": "— Επιλέξτε —",                       "value": ""},
+        {"label": "Η ΒΟΥΛΗ ΤΩΝ ΕΛΛΗΝΩΝ",                "value": "voyli"},
+        {"label": "Ο ΠΡΟΕΔΡΟΣ ΤΗΣ ΕΛΛΗΝΙΚΗΣ ΔΗΜΟΚΡΑΤΙΑΣ","value": "proedros"},
+        {"label": "ΤΟ ΥΠΟΥΡΓΙΚΟ ΣΥΜΒΟΥΛΙΟ",             "value": "symboylio"},
+        {"label": "Ο ΥΠΟΥΡΓΟΣ",                         "value": "ypourgos"},
+        {"label": "ΟΙ ΥΠΟΥΡΓΟΙ (ΚΥΑ)",                 "value": "ypourgi"},
+        {"label": "Ο ΑΝΑΠΛΗΡΩΤΗΣ ΥΠΟΥΡΓΟΣ",             "value": "anaplirotis"},
+        {"label": "Ο ΥΦΥΠΟΥΡΓΟΣ",                       "value": "yfypourgos"},
+        {"label": "Ο ΓΕΝΙΚΟΣ ΓΡΑΜΜΑΤΕΑΣ",               "value": "gg"},
+        {"label": "Ο ΕΙΔΙΚΟΣ ΓΡΑΜΜΑΤΕΑΣ",               "value": "eg"},
+        {"label": "Ο ΔΙΟΙΚΗΤΗΣ (ΑΑΙ)",                 "value": "dioikitis"},
+        {"label": "Ο ΠΕΡΙΦΕΡΕΙΑΡΧΗΣ",                   "value": "periferiarxis"},
+        {"label": "Ο ΔΗΜΑΡΧΟΣ",                         "value": "dimarchos"},
+        {"label": "ΤΟ ΔΗΜΟΤΙΚΟ ΣΥΜΒΟΥΛΙΟ",              "value": "dimotiko_symb"},
+        {"label": "Άλλο",                               "value": "allo"}
       ],
-      "help_text": "Ποιος θεσμός εκδίδει ή υπογράφει"
+      "help_text": ""
     },
     {
       "field_id": "armodiothta",
-      "label": "Αρμοδιότητα",
+      "label": "Αρμοδιότητα / Χαρτοφυλάκιο",
       "field_type": "text",
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "π.χ. Οικονομικών, Παιδείας — αφήστε κενό αν δεν χρειάζεται"
+      "help_text": "π.χ. ΟΙΚΟΝΟΜΙΚΩΝ, ΠΑΙΔΕΙΑΣ, ΑΑΔΕ, Δήμος Αθηναίων — αφήστε κενό αν δεν χρειάζεται"
     }
   ],
   "child_slots": [],
-  "render_template": "{% if thesmos %}{% set t = {'ypoyrgos': 'Ο ΥΠΟΥΡΓΟΣ', 'anaplirotis': 'Ο ΑΝΑΠΛ. ΥΠΟΥΡΓΟΣ', 'yfypourgos': 'Ο ΥΦΥΠΟΥΡΓΟΣ', 'gg': 'Ο ΓΕΝ. ΓΡΑΜΜΑΤΕΑΣ', 'symboylio': 'ΤΟ ΥΠΟΥΡΓΙΚΟ ΣΥΜΒΟΥΛΙΟ', 'proedros': 'Ο ΠΡΟΕΔΡΟΣ ΤΗΣ ΕΛΛΗΝΙΚΗΣ ΔΗΜΟΚΡΑΤΙΑΣ', 'voyli': 'Η ΒΟΥΛΗ', 'allo': ''} %}<p><strong>{{ t.get(thesmos, thesmos) }}{% if armodiothta %} {{ armodiothta | upper }}{% endif %}</strong></p>{% endif %}",
+  "render_template": "{% if thesmos %}{% set t = {'voyli': 'Η ΒΟΥΛΗ ΤΩΝ ΕΛΛΗΝΩΝ', 'proedros': 'Ο ΠΡΟΕΔΡΟΣ ΤΗΣ ΕΛΛΗΝΙΚΗΣ ΔΗΜΟΚΡΑΤΙΑΣ', 'symboylio': 'ΤΟ ΥΠΟΥΡΓΙΚΟ ΣΥΜΒΟΥΛΙΟ', 'ypourgos': 'Ο ΥΠΟΥΡΓΟΣ', 'ypourgi': 'ΟΙ ΥΠΟΥΡΓΟΙ', 'anaplirotis': 'Ο ΑΝΑΠΛΗΡΩΤΗΣ ΥΠΟΥΡΓΟΣ', 'yfypourgos': 'Ο ΥΦΥΠΟΥΡΓΟΣ', 'gg': 'Ο ΓΕΝΙΚΟΣ ΓΡΑΜΜΑΤΕΑΣ', 'eg': 'Ο ΕΙΔΙΚΟΣ ΓΡΑΜΜΑΤΕΑΣ', 'dioikitis': 'Ο ΔΙΟΙΚΗΤΗΣ', 'periferiarxis': 'Ο ΠΕΡΙΦΕΡΕΙΑΡΧΗΣ', 'dimarchos': 'Ο ΔΗΜΑΡΧΟΣ', 'dimotiko_symb': 'ΤΟ ΔΗΜΟΤΙΚΟ ΣΥΜΒΟΥΛΙΟ', 'allo': ''} %}<p><strong>{{ t.get(thesmos, thesmos) }}{% if armodiothta %} {{ armodiothta | upper }}{% endif %}</strong></p>{% endif %}",
   "metadata": {"category": "προοίμιο"}
 }

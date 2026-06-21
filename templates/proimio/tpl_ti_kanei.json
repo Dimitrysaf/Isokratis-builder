@@ -1,7 +1,7 @@
 {
   "template_id": "tpl_ti_kanei",
-  "name": "Τι κάνει",
-  "description": "Η πράξη που εκτελεί ο θεσμός (ψηφίζει, εκδίδει, διατάσσει κλπ.).",
+  "name": "Τι κάνει (Γέφυρα)",
+  "description": "Το κύριο ρήμα ενέργειας — λειτουργεί ως γέφυρα στο τέλος του προοιμίου (κεφαλαία, bold).",
   "fields": [
     {
       "field_id": "energeia",
@@ -10,20 +10,31 @@
       "required": false,
       "default_value": "",
       "options": [
-        {"label": "— Επιλέξτε —",    "value": ""},
-        {"label": "Ψηφίζει",         "value": "psifizei"},
-        {"label": "Εκδίδει",         "value": "ekdidei"},
-        {"label": "Διατάσσει",       "value": "diatassei"},
-        {"label": "Αποφασίζει",      "value": "apofasizei"},
-        {"label": "Εγκρίνει",        "value": "egkrinei"},
-        {"label": "Ορίζει",          "value": "orizei"},
-        {"label": "Εξουσιοδοτεί",    "value": "exousiodotei"},
-        {"label": "Άλλο",            "value": "allo"}
+        {"label": "— Επιλέξτε —",          "value": ""},
+        {"label": "ΨΗΦΙΖΟΥΜΕ",             "value": "psifizouwe"},
+        {"label": "ΕΚΔΙΔΟΥΜΕ",             "value": "ekdidouwe"},
+        {"label": "ΑΠΟΦΑΣΙΖΟΥΜΕ",          "value": "apofasizouwe"},
+        {"label": "ΕΓΚΡΙΝΟΥΜΕ",            "value": "egkrinouwe"},
+        {"label": "ΤΡΟΠΟΠΟΙΟΥΜΕ",          "value": "tropopoioume"},
+        {"label": "ΚΑΤΑΡΓΟΥΜΕ",            "value": "katargoume"},
+        {"label": "ΠΡΟΚΗΡΥΣΣΟΥΜΕ",         "value": "prokirisuwe"},
+        {"label": "ΣΥΓΚΡΟΤΟΥΜΕ",           "value": "sygkrotoume"},
+        {"label": "ΑΝΑΘΕΤΟΥΜΕ",            "value": "anatitheume"},
+        {"label": "Άλλο (ελεύθερο)",       "value": "allo"}
       ],
-      "help_text": "Τι πράξη εκτελεί ο θεσμός"
+      "help_text": ""
+    },
+    {
+      "field_id": "allo_keimeno",
+      "label": "Ελεύθερο κείμενο ρήματος",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "Συμπληρώστε μόνο αν επιλέξατε «Άλλο»"
     }
   ],
   "child_slots": [],
-  "render_template": "{% if energeia %}{% set e = {'psifizei': 'ΨΗΦΙΖΕΙ', 'ekdidei': 'ΕΚΔΙΔΕΙ', 'diatassei': 'ΔΙΑΤΑΣΣΕΙ', 'apofasizei': 'ΑΠΟΦΑΣΙΖΕΙ', 'egkrinei': 'ΕΓΚΡΙΝΕΙ', 'orizei': 'ΟΡΙΖΕΙ', 'exousiodotei': 'ΕΞΟΥΣΙΟΔΟΤΕΙ', 'allo': ''} %}<p><strong>{{ e.get(energeia, energeia) }}</strong></p>{% endif %}",
+  "render_template": "{% if energeia %}{% if energeia == 'allo' %}<p><strong>{{ allo_keimeno | upper }}</strong></p>{% else %}{% set e = {'psifizouwe': 'ΨΗΦΙΖΟΥΜΕ', 'ekdidouwe': 'ΕΚΔΙΔΟΥΜΕ', 'apofasizouwe': 'ΑΠΟΦΑΣΙΖΟΥΜΕ', 'egkrinouwe': 'ΕΓΚΡΙΝΟΥΜΕ', 'tropopoioume': 'ΤΡΟΠΟΠΟΙΟΥΜΕ', 'katargoume': 'ΚΑΤΑΡΓΟΥΜΕ', 'prokirisuwe': 'ΠΡΟΚΗΡΥΣΣΟΥΜΕ', 'sygkrotoume': 'ΣΥΓΚΡΟΤΟΥΜΕ', 'anatitheume': 'ΑΝΑΘΕΤΟΥΜΕ'} %}<p><strong>{{ e.get(energeia, energeia) }}:</strong></p>{% endif %}{% endif %}",
   "metadata": {"category": "προοίμιο"}
 }

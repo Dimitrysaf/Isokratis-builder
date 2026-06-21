@@ -1,13 +1,13 @@
 {
   "template_id": "tpl_proimio",
   "name": "Προοίμιο",
-  "description": "Κατηγορία δομής — δεν αποδίδει τίποτα στο PDF, μόνο τα παιδιά της.",
+  "description": "Κατηγορία δομής — περιέχει Ποιος, Έχοντας υπόψη, Συνδετικές, Τι κάνει, και Απλό κείμενο.",
   "fields": [],
   "child_slots": [
     {
       "slot_id": "contenuto",
       "label": "Στοιχεία Προοιμίου",
-      "allowed_template_ids": ["tpl_poios", "tpl_ti_kanei", "tpl_aplo_keimeno", "tpl_exontas_ypopsin"],
+      "allowed_template_ids": ["tpl_poios", "tpl_exontas_ypopsin", "tpl_syndetikes", "tpl_ti_kanei", "tpl_aplo_keimeno"],
       "min_count": 0,
       "max_count": 0
     }

@@ -1,17 +1,17 @@
 {
   "template_id": "tpl_exontas_ypopsin",
   "name": "Έχοντας υπόψη",
-  "description": "Κατηγορία δομής — δεν αποδίδει τίποτα στο PDF, μόνο τα παιδιά της.",
+  "description": "Κατηγορία — περιέχει τις Αναφορές του νομικού υπόβαθρου. Εμφανίζει την επικεφαλίδα «Έχοντας υπόψη:» στο PDF.",
   "fields": [],
   "child_slots": [
     {
-      "slot_id": "dedomena",
-      "label": "Δεδομένα",
-      "allowed_template_ids": [],
+      "slot_id": "anaforoi",
+      "label": "Αναφορές",
+      "allowed_template_ids": ["tpl_anafora"],
       "min_count": 0,
       "max_count": 0
     }
   ],
-  "render_template": "{% for c in children %}{{ c }}{% endfor %}",
+  "render_template": "{% if children %}<p><strong>Έχοντας υπόψη:</strong></p>{% for c in children %}{{ c }}{% endfor %}{% endif %}",
   "metadata": {"category": "προοίμιο", "is_category": true}
 }
