@@ -1,6 +1,6 @@
 {
   "template_id": "tpl_ti_kanei",
-  "name": "Τι κάνει (Γέφυρα)",
+  "name": "Τι Κάνει",
   "description": "Το κύριο ρήμα ενέργειας — λειτουργεί ως γέφυρα στο τέλος του προοιμίου (κεφαλαία, bold).",
   "fields": [
     {
@@ -34,7 +34,15 @@
       "help_text": "Συμπληρώστε μόνο αν επιλέξατε «Άλλο»"
     }
   ],
-  "child_slots": [],
-  "render_template": "{% if energeia %}{% if energeia == 'allo' %}<p><strong>{{ allo_keimeno | upper }}</strong></p>{% else %}{% set e = {'psifizouwe': 'ΨΗΦΙΖΟΥΜΕ', 'ekdidouwe': 'ΕΚΔΙΔΟΥΜΕ', 'apofasizouwe': 'ΑΠΟΦΑΣΙΖΟΥΜΕ', 'egkrinouwe': 'ΕΓΚΡΙΝΟΥΜΕ', 'tropopoioume': 'ΤΡΟΠΟΠΟΙΟΥΜΕ', 'katargoume': 'ΚΑΤΑΡΓΟΥΜΕ', 'prokirisuwe': 'ΠΡΟΚΗΡΥΣΣΟΥΜΕ', 'sygkrotoume': 'ΣΥΓΚΡΟΤΟΥΜΕ', 'anatitheume': 'ΑΝΑΘΕΤΟΥΜΕ'} %}<p><strong>{{ e.get(energeia, energeia) }}:</strong></p>{% endif %}{% endif %}",
-  "metadata": {"category": "προοίμιο"}
+  "child_slots": [
+    {
+      "slot_id": "paragrafoi",
+      "label": "Παράγραφοι",
+      "allowed_template_ids": ["tpl_paragrafos"],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "{% if energeia %}{% if energeia == 'allo' %}<p><strong>{{ allo_keimeno | upper }}</strong></p>{% else %}{% set e = {'psifizouwe': 'ΨΗΦΙΖΟΥΜΕ', 'ekdidouwe': 'ΕΚΔΙΔΟΥΜΕ', 'apofasizouwe': 'ΑΠΟΦΑΣΙΖΟΥΜΕ', 'egkrinouwe': 'ΕΓΚΡΙΝΟΥΜΕ', 'tropopoioume': 'ΤΡΟΠΟΠΟΙΟΥΜΕ', 'katargoume': 'ΚΑΤΑΡΓΟΥΜΕ', 'prokirisuwe': 'ΠΡΟΚΗΡΥΣΣΟΥΜΕ', 'sygkrotoume': 'ΣΥΓΚΡΟΤΟΥΜΕ', 'anatitheume': 'ΑΝΑΘΕΤΟΥΜΕ'} %}<p><strong>{{ e.get(energeia, energeia) }}:</strong></p>{% endif %}{% endif %}{% for c in children %}<p>{{ loop.index }}) {{ c | striptags }}</p>{% endfor %}",
+  "metadata": {"category": "προοίμιο", "folder": "proimio", "folder_label": "Προοίμιο", "folder_order": 1}
 }

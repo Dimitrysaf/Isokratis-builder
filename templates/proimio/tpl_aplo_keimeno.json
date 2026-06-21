@@ -1,7 +1,7 @@
 {
   "template_id": "tpl_aplo_keimeno",
-  "name": "Απλό κείμενο",
-  "description": "Ελεύθερο κείμενο μεγάλης έκτασης με δυνατότητα μορφοποίησης.",
+  "name": "Απλό Κείμενο",
+  "description": "Ελεύθερο κείμενο μεγάλης έκτασης.",
   "fields": [
     {
       "field_id": "keimeno",
@@ -15,5 +15,5 @@
   ],
   "child_slots": [],
   "render_template": "{% if keimeno %}<p>{{ keimeno }}</p>{% endif %}",
-  "metadata": {"category": "προοίμιο"}
+  "metadata": {"category": "βασικά", "folder": "vasi", "folder_label": "Βασικά", "folder_order": 2}
 }

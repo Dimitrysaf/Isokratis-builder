@@ -1,6 +1,6 @@
 {
   "template_id": "tpl_poios",
-  "name": "Ποιος (Φορέας)",
+  "name": "Ποιος",
   "description": "Το θεσμικό όργανο που έχει την πρωτοβουλία ή εξουσία έκδοσης.",
   "fields": [
     {
@@ -38,7 +38,15 @@
       "help_text": "π.χ. ΟΙΚΟΝΟΜΙΚΩΝ, ΠΑΙΔΕΙΑΣ, ΑΑΔΕ, Δήμος Αθηναίων — αφήστε κενό αν δεν χρειάζεται"
     }
   ],
-  "child_slots": [],
-  "render_template": "{% if thesmos %}{% set t = {'voyli': 'Η ΒΟΥΛΗ ΤΩΝ ΕΛΛΗΝΩΝ', 'proedros': 'Ο ΠΡΟΕΔΡΟΣ ΤΗΣ ΕΛΛΗΝΙΚΗΣ ΔΗΜΟΚΡΑΤΙΑΣ', 'symboylio': 'ΤΟ ΥΠΟΥΡΓΙΚΟ ΣΥΜΒΟΥΛΙΟ', 'ypourgos': 'Ο ΥΠΟΥΡΓΟΣ', 'ypourgi': 'ΟΙ ΥΠΟΥΡΓΟΙ', 'anaplirotis': 'Ο ΑΝΑΠΛΗΡΩΤΗΣ ΥΠΟΥΡΓΟΣ', 'yfypourgos': 'Ο ΥΦΥΠΟΥΡΓΟΣ', 'gg': 'Ο ΓΕΝΙΚΟΣ ΓΡΑΜΜΑΤΕΑΣ', 'eg': 'Ο ΕΙΔΙΚΟΣ ΓΡΑΜΜΑΤΕΑΣ', 'dioikitis': 'Ο ΔΙΟΙΚΗΤΗΣ', 'periferiarxis': 'Ο ΠΕΡΙΦΕΡΕΙΑΡΧΗΣ', 'dimarchos': 'Ο ΔΗΜΑΡΧΟΣ', 'dimotiko_symb': 'ΤΟ ΔΗΜΟΤΙΚΟ ΣΥΜΒΟΥΛΙΟ', 'allo': ''} %}<p><strong>{{ t.get(thesmos, thesmos) }}{% if armodiothta %} {{ armodiothta | upper }}{% endif %}</strong></p>{% endif %}",
-  "metadata": {"category": "προοίμιο"}
+  "child_slots": [
+    {
+      "slot_id": "paragrafoi",
+      "label": "Παράγραφοι",
+      "allowed_template_ids": ["tpl_paragrafos"],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "{% if thesmos %}{% set t = {'voyli': 'Η ΒΟΥΛΗ ΤΩΝ ΕΛΛΗΝΩΝ', 'proedros': 'Ο ΠΡΟΕΔΡΟΣ ΤΗΣ ΕΛΛΗΝΙΚΗΣ ΔΗΜΟΚΡΑΤΙΑΣ', 'symboylio': 'ΤΟ ΥΠΟΥΡΓΙΚΟ ΣΥΜΒΟΥΛΙΟ', 'ypourgos': 'Ο ΥΠΟΥΡΓΟΣ', 'ypourgi': 'ΟΙ ΥΠΟΥΡΓΟΙ', 'anaplirotis': 'Ο ΑΝΑΠΛΗΡΩΤΗΣ ΥΠΟΥΡΓΟΣ', 'yfypourgos': 'Ο ΥΦΥΠΟΥΡΓΟΣ', 'gg': 'Ο ΓΕΝΙΚΟΣ ΓΡΑΜΜΑΤΕΑΣ', 'eg': 'Ο ΕΙΔΙΚΟΣ ΓΡΑΜΜΑΤΕΑΣ', 'dioikitis': 'Ο ΔΙΟΙΚΗΤΗΣ', 'periferiarxis': 'Ο ΠΕΡΙΦΕΡΕΙΑΡΧΗΣ', 'dimarchos': 'Ο ΔΗΜΑΡΧΟΣ', 'dimotiko_symb': 'ΤΟ ΔΗΜΟΤΙΚΟ ΣΥΜΒΟΥΛΙΟ', 'allo': ''} %}<p><strong>{{ t.get(thesmos, thesmos) }}{% if armodiothta %} {{ armodiothta | upper }}{% endif %}</strong></p>{% endif %}{% for c in children %}<p>{{ loop.index }}) {{ c | striptags }}</p>{% endfor %}",
+  "metadata": {"category": "προοίμιο", "folder": "proimio", "folder_label": "Προοίμιο", "folder_order": 1}
 }

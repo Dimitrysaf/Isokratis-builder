@@ -1,7 +1,7 @@
 {
   "template_id": "tpl_paragrafos",
   "name": "Παράγραφος",
-  "description": "Απλή παράγραφος κειμένου — χρησιμοποιείται μέσα σε Αναφορά, Ποιος, κ.ά.",
+  "description": "Απλή αριθμημένη παράγραφος κειμένου — χρησιμοποιείται μέσα σε Ποιος, Με Τι, Τι Κάνει κ.ά.",
   "fields": [
     {
       "field_id": "keimeno",
@@ -14,6 +14,6 @@
     }
   ],
   "child_slots": [],
-  "render_template": "<p class='para'>{{ keimeno }}</p>",
-  "metadata": {"category": "βασικά"}
+  "render_template": "{{ keimeno }}",
+  "metadata": {"category": "βασικά", "folder": "vasi", "folder_label": "Βασικά", "folder_order": 2}
 }
