@@ -253,5 +253,68 @@ def delete_template(template_id):
     return redirect(url_for("templates_page"))
 
 
+# ──────────────────────────────────────────────────────────────
+# Live preview (renders doc JSON → styled HTML)
+# ──────────────────────────────────────────────────────────────
+
+@app.route("/api/preview", methods=["POST"])
+def live_preview():
+    data = request.get_json()
+    if not data:
+        return Response("<p>No data</p>", mimetype="text/html")
+    try:
+        doc = Document.from_dict(data)
+        tmpl_dict = _get_templates_dict()
+        renderer = HTMLRenderer(tmpl_dict)
+        body = renderer.render_node(doc.root)
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html {{ background: #e8e8e8; }}
+  body {{
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 1.7;
+    color: #111;
+    background: #e8e8e8;
+    padding: 32px 24px;
+  }}
+  .page {{
+    background: #fff;
+    width: 210mm;
+    max-width: 100%;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 25mm 20mm;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.18);
+  }}
+  h1 {{ font-size: 16pt; font-weight: bold; margin-bottom: 18pt; text-align: center; border-bottom: 2px solid #000; padding-bottom: 8pt; }}
+  h2 {{ font-size: 13pt; font-weight: bold; margin: 14pt 0 6pt; }}
+  h3 {{ font-size: 11pt; font-weight: bold; margin: 10pt 0 4pt; }}
+  p {{ margin: 6pt 0; text-align: justify; }}
+  ul, ol {{ margin: 6pt 0 6pt 20pt; }}
+  li {{ margin: 3pt 0; }}
+  .empty-doc {{ text-align: center; color: #aaa; padding: 60pt 0; font-style: italic; font-size: 10pt; }}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>{_esc(doc.title)}</h1>
+  {body if body.strip() else '<div class="empty-doc">Document is empty — add nodes to see content here.</div>'}
+</div>
+</body>
+</html>"""
+        return Response(html, mimetype="text/html")
+    except Exception as e:
+        return Response(f"<pre style='color:red;padding:20px'>Preview error: {e}</pre>", mimetype="text/html")
+
+
+def _esc(s):
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
