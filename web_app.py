@@ -138,7 +138,17 @@ def save_version(doc_id):
     if not doc:
         return jsonify({"error": "Not found"}), 404
     version_id = version_repo.save_version(doc, note=note)
-    return jsonify({"ok": True, "version_id": version_id})
+    versions = version_repo.list_versions(doc_id)
+    return jsonify({"ok": True, "version_id": version_id, "versions": versions})
+
+
+# List versions (AJAX)
+# ──────────────────────────────────────────────────────────────
+
+@app.route("/api/documents/<doc_id>/versions", methods=["GET"])
+def list_versions(doc_id):
+    versions = version_repo.list_versions(doc_id)
+    return jsonify({"versions": versions})
 
 
 # ──────────────────────────────────────────────────────────────
