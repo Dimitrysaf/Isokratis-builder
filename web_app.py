@@ -79,10 +79,12 @@ def edit_document(doc_id):
         return "Document not found", 404
     templates = template_repo.load_all_templates()
     versions = version_repo.list_versions(doc_id)
+    templates_dicts = [t.to_dict() for t in templates]
     return render_template(
         "edit_document.html",
         doc=doc,
         templates=templates,
+        templates_json=json.dumps(templates_dicts),
         versions=versions,
         doc_json=json.dumps(doc.to_dict()),
     )
