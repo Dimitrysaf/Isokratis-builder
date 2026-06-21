@@ -1,43 +1,17 @@
 {
   "template_id": "tpl_proimio",
   "name": "Προοίμιο",
-  "description": "Προοίμιο νομοθετικής πράξης — περιέχει Αναφορές και Ποιος, ή σκέτο κείμενο",
-  "fields": [
-    {
-      "field_id": "exontas_ypopsin",
-      "label": "Εμφάνιση 'Έχοντας υπόψη:'",
-      "field_type": "checkbox",
-      "required": false,
-      "default_value": true,
-      "options": [],
-      "help_text": "Εμφανίζει την επικεφαλίδα πριν τις Αναφορές"
-    },
-    {
-      "field_id": "keimeno",
-      "label": "Σκέτο κείμενο",
-      "field_type": "textarea",
-      "required": false,
-      "default_value": "",
-      "options": [],
-      "help_text": "Χρησιμοποιείται μόνο αν δεν έχουν οριστεί Αναφορές ή Ποιος"
-    }
-  ],
+  "description": "Κατηγορία δομής — δεν αποδίδει τίποτα στο PDF, μόνο τα παιδιά της.",
+  "fields": [],
   "child_slots": [
     {
-      "slot_id": "anaforoi",
-      "label": "Αναφορές (Έχοντας υπόψη)",
-      "allowed_template_ids": ["tpl_anafora"],
-      "min_count": 0,
-      "max_count": 0
-    },
-    {
-      "slot_id": "poios",
-      "label": "Ποιος",
-      "allowed_template_ids": ["tpl_poios"],
+      "slot_id": "contenuto",
+      "label": "Στοιχεία Προοιμίου",
+      "allowed_template_ids": ["tpl_poios", "tpl_ti_kanei", "tpl_aplo_keimeno", "tpl_exontas_ypopsin"],
       "min_count": 0,
       "max_count": 0
     }
   ],
-  "render_template": "<div class='proimio'>{% if children %}{% if exontas_ypopsin %}<p class='exontas-header'><strong>Έχοντας υπόψη:</strong></p>{% endif %}{% for c in children %}{{ c }}{% endfor %}{% elif keimeno %}<p>{{ keimeno }}</p>{% endif %}</div>",
-  "metadata": {"category": "δομή"}
+  "render_template": "{% for c in children %}{{ c }}{% endfor %}",
+  "metadata": {"category": "δομή", "is_category": true}
 }

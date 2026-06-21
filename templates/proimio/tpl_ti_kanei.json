@@ -1,0 +1,29 @@
+{
+  "template_id": "tpl_ti_kanei",
+  "name": "Τι κάνει",
+  "description": "Η πράξη που εκτελεί ο θεσμός (ψηφίζει, εκδίδει, διατάσσει κλπ.).",
+  "fields": [
+    {
+      "field_id": "energeia",
+      "label": "Ενέργεια",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "— Επιλέξτε —",    "value": ""},
+        {"label": "Ψηφίζει",         "value": "psifizei"},
+        {"label": "Εκδίδει",         "value": "ekdidei"},
+        {"label": "Διατάσσει",       "value": "diatassei"},
+        {"label": "Αποφασίζει",      "value": "apofasizei"},
+        {"label": "Εγκρίνει",        "value": "egkrinei"},
+        {"label": "Ορίζει",          "value": "orizei"},
+        {"label": "Εξουσιοδοτεί",    "value": "exousiodotei"},
+        {"label": "Άλλο",            "value": "allo"}
+      ],
+      "help_text": "Τι πράξη εκτελεί ο θεσμός"
+    }
+  ],
+  "child_slots": [],
+  "render_template": "{% if energeia %}{% set e = {'psifizei': 'ΨΗΦΙΖΕΙ', 'ekdidei': 'ΕΚΔΙΔΕΙ', 'diatassei': 'ΔΙΑΤΑΣΣΕΙ', 'apofasizei': 'ΑΠΟΦΑΣΙΖΕΙ', 'egkrinei': 'ΕΓΚΡΙΝΕΙ', 'orizei': 'ΟΡΙΖΕΙ', 'exousiodotei': 'ΕΞΟΥΣΙΟΔΟΤΕΙ', 'allo': ''} %}<p><strong>{{ e.get(energeia, energeia) }}</strong></p>{% endif %}",
+  "metadata": {"category": "προοίμιο"}
+}

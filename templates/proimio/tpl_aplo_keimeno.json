@@ -1,0 +1,19 @@
+{
+  "template_id": "tpl_aplo_keimeno",
+  "name": "Απλό κείμενο",
+  "description": "Ελεύθερο κείμενο μεγάλης έκτασης με δυνατότητα μορφοποίησης.",
+  "fields": [
+    {
+      "field_id": "keimeno",
+      "label": "Κείμενο",
+      "field_type": "textarea",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    }
+  ],
+  "child_slots": [],
+  "render_template": "{% if keimeno %}<p>{{ keimeno }}</p>{% endif %}",
+  "metadata": {"category": "προοίμιο"}
+}
