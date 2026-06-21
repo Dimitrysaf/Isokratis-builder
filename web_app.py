@@ -4,6 +4,7 @@ import json
 import uuid
 from datetime import datetime
 from pathlib import Path
+from html.parser import HTMLParser
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, Response
 
@@ -257,56 +258,166 @@ def delete_template(template_id):
 # Live preview (renders doc JSON → styled HTML)
 # ──────────────────────────────────────────────────────────────
 
+# ── PDF generation helpers ─────────────────────────────────
+
+_DEJAVU      = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+_DEJAVU_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+_HEADING_TAGS   = {"h1", "h2", "h3", "h4", "h5", "h6"}
+_BLOCK_TAGS     = _HEADING_TAGS | {"p", "li", "blockquote", "pre", "td", "th"}
+
+
+class _HTMLExtractor(HTMLParser):
+    """Walk rendered HTML and emit a flat list of (tag, text) pairs."""
+
+    def __init__(self):
+        super().__init__()
+        self.items: list[tuple[str, str]] = []
+        self._tag: str | None = None
+        self._buf: list[str] = []
+        self._depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in _BLOCK_TAGS and self._tag is None:
+            self._tag = tag
+            self._buf = []
+            self._depth = 1
+        elif self._tag is not None:
+            self._depth += 1
+
+    def handle_endtag(self, tag):
+        if self._tag is None:
+            return
+        if tag == self._tag:
+            self._depth -= 1
+            if self._depth <= 0:
+                text = " ".join("".join(self._buf).split()).strip()
+                if text:
+                    self.items.append((self._tag, text))
+                self._tag = None
+                self._buf = []
+        else:
+            self._depth -= 1
+
+    def handle_data(self, data):
+        if self._tag is not None:
+            self._buf.append(data)
+
+
+def _generate_pdf_bytes(doc, tmpl_dict) -> bytes:
+    """Render doc → HTML → parse → fpdf2 PDF bytes (no system C libs required)."""
+    from fpdf import FPDF
+
+    renderer = HTMLRenderer(tmpl_dict)
+    html_body = renderer.render_node(doc.root)
+    full_html = f"<h1>{_esc(doc.title)}</h1>{html_body}"
+
+    extractor = _HTMLExtractor()
+    extractor.feed(full_html)
+    items = extractor.items
+
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
+    pdf.set_margins(left=20, top=25, right=20)
+    pdf.set_auto_page_break(auto=True, margin=20)
+
+    pdf.add_font("DejaVu", "",  _DEJAVU)
+    pdf.add_font("DejaVu", "B", _DEJAVU_BOLD)
+
+    pdf.add_page()
+    effective_width = pdf.w - pdf.l_margin - pdf.r_margin  # 170 mm on A4
+
+    for tag, text in items:
+        if tag == "h1":
+            pdf.set_font("DejaVu", "B", 16)
+            pdf.multi_cell(effective_width, 9, text, align="C", new_x="LMARGIN", new_y="NEXT")
+            # Underline rule
+            x, y = pdf.l_margin, pdf.get_y() + 1
+            pdf.line(x, y, x + effective_width, y)
+            pdf.ln(5)
+        elif tag == "h2":
+            pdf.ln(4)
+            pdf.set_font("DejaVu", "B", 13)
+            pdf.multi_cell(effective_width, 8, text, align="L", new_x="LMARGIN", new_y="NEXT")
+            pdf.ln(2)
+        elif tag == "h3":
+            pdf.ln(3)
+            pdf.set_font("DejaVu", "B", 11.5)
+            pdf.multi_cell(effective_width, 7, text, align="L", new_x="LMARGIN", new_y="NEXT")
+            pdf.ln(1)
+        elif tag == "li":
+            pdf.set_font("DejaVu", "", 11)
+            pdf.multi_cell(effective_width - 5, 6.5, f"\u2022  {text}", align="L",
+                           new_x="LMARGIN", new_y="NEXT")
+        else:  # p, td, th, blockquote, etc.
+            pdf.set_font("DejaVu", "", 11)
+            pdf.multi_cell(effective_width, 6.5, text, align="J", new_x="LMARGIN", new_y="NEXT")
+            pdf.ln(2)
+
+    return bytes(pdf.output())
+
+
+def _build_preview_html(doc, tmpl_dict):
+    """Build an HTML preview string (used for the HTML fallback endpoint)."""
+    renderer = HTMLRenderer(tmpl_dict)
+    body = renderer.render_node(doc.root)
+    empty = '<p style="text-align:center;color:#aaa;margin-top:60pt;font-style:italic;">Document is empty — add nodes to see content here.</p>'
+    return f"""<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page {{ size: A4; margin: 25mm 20mm; }}
+  body {{
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 11pt; line-height: 1.75; color: #111;
+    margin: 0; padding: 0;
+  }}
+  h1 {{ font-size: 15pt; font-weight: bold; margin-bottom: 16pt; text-align: center; border-bottom: 1.5pt solid #000; padding-bottom: 6pt; }}
+  h2 {{ font-size: 12.5pt; font-weight: bold; margin: 14pt 0 5pt; }}
+  h3 {{ font-size: 11pt; font-weight: bold; margin: 10pt 0 4pt; }}
+  p  {{ margin: 5pt 0; text-align: justify; }}
+  ul, ol {{ margin: 5pt 0 5pt 18pt; }}
+  li {{ margin: 2pt 0; }}
+</style>
+</head>
+<body>
+<h1>{_esc(doc.title)}</h1>
+{body if body.strip() else empty}
+</body>
+</html>"""
+
+
+@app.route("/api/preview/pdf", methods=["POST"])
+def live_preview_pdf():
+    """Generate a real binary PDF from posted doc JSON (application/pdf)."""
+    data = request.get_json()
+    if not data:
+        return Response(b"", status=400)
+    try:
+        doc = Document.from_dict(data)
+        tmpl_dict = _get_templates_dict()
+        pdf_bytes = _generate_pdf_bytes(doc, tmpl_dict)
+        return Response(
+            pdf_bytes,
+            mimetype="application/pdf",
+            headers={"Content-Disposition": "inline; filename=preview.pdf"},
+        )
+    except Exception as e:
+        import traceback
+        print(f"PDF preview error: {traceback.format_exc()}")
+        return Response(json.dumps({"error": str(e)}), status=500, mimetype="application/json")
+
+
 @app.route("/api/preview", methods=["POST"])
 def live_preview():
+    """HTML preview (kept for fallback)."""
     data = request.get_json()
     if not data:
         return Response("<p>No data</p>", mimetype="text/html")
     try:
         doc = Document.from_dict(data)
         tmpl_dict = _get_templates_dict()
-        renderer = HTMLRenderer(tmpl_dict)
-        body = renderer.render_node(doc.root)
-        html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<style>
-  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-  html {{ background: #e8e8e8; }}
-  body {{
-    font-family: "Georgia", "Times New Roman", serif;
-    font-size: 11pt;
-    line-height: 1.7;
-    color: #111;
-    background: #e8e8e8;
-    padding: 32px 24px;
-  }}
-  .page {{
-    background: #fff;
-    width: 210mm;
-    max-width: 100%;
-    min-height: 297mm;
-    margin: 0 auto;
-    padding: 25mm 20mm;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.18);
-  }}
-  h1 {{ font-size: 16pt; font-weight: bold; margin-bottom: 18pt; text-align: center; border-bottom: 2px solid #000; padding-bottom: 8pt; }}
-  h2 {{ font-size: 13pt; font-weight: bold; margin: 14pt 0 6pt; }}
-  h3 {{ font-size: 11pt; font-weight: bold; margin: 10pt 0 4pt; }}
-  p {{ margin: 6pt 0; text-align: justify; }}
-  ul, ol {{ margin: 6pt 0 6pt 20pt; }}
-  li {{ margin: 3pt 0; }}
-  .empty-doc {{ text-align: center; color: #aaa; padding: 60pt 0; font-style: italic; font-size: 10pt; }}
-</style>
-</head>
-<body>
-<div class="page">
-  <h1>{_esc(doc.title)}</h1>
-  {body if body.strip() else '<div class="empty-doc">Document is empty — add nodes to see content here.</div>'}
-</div>
-</body>
-</html>"""
+        html = _build_preview_html(doc, tmpl_dict)
         return Response(html, mimetype="text/html")
     except Exception as e:
         return Response(f"<pre style='color:red;padding:20px'>Preview error: {e}</pre>", mimetype="text/html")
