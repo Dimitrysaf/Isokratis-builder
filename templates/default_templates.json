@@ -1,0 +1,162 @@
+[
+  {
+    "template_id": "tpl_article",
+    "name": "Άρθρο (Article)",
+    "description": "A law article with automatic numbering and paragraphs",
+    "fields": [
+      {
+        "field_id": "article_number",
+        "label": "Άρθρο Αριθμός (Article Number)",
+        "field_type": "number",
+        "required": true,
+        "default_value": 1
+      },
+      {
+        "field_id": "title",
+        "label": "Τίτλος (Title - Optional)",
+        "field_type": "text",
+        "required": false,
+        "default_value": ""
+      }
+    ],
+    "child_slots": [
+      {
+        "slot_id": "paragraphs",
+        "label": "Παράγραφοι (Paragraphs)",
+        "allowed_template_ids": ["tpl_paragraph"],
+        "min_count": 1,
+        "max_count": 0
+      }
+    ],
+    "render_template": "<h2>Άρθρο {{ article_number }}{% if title %}: {{ title }}{% endif %}</h2>\n{% for child in children %}\n{{ child }}\n{% endfor %}",
+    "metadata": {
+      "category": "structure",
+      "icon": "document"
+    }
+  },
+  {
+    "template_id": "tpl_paragraph",
+    "name": "Παράγραφος (Paragraph)",
+    "description": "A paragraph with optional number and rich content",
+    "fields": [
+      {
+        "field_id": "paragraph_number",
+        "label": "Αριθμός (Number - Leave empty for auto)",
+        "field_type": "text",
+        "required": false,
+        "default_value": ""
+      },
+      {
+        "field_id": "content",
+        "label": "Κείμενο (Content)",
+        "field_type": "textarea",
+        "required": true,
+        "default_value": ""
+      }
+    ],
+    "child_slots": [
+      {
+        "slot_id": "subparagraphs",
+        "label": "Υποπαράγραφοι (Sub-paragraphs)",
+        "allowed_template_ids": ["tpl_subparagraph"],
+        "min_count": 0,
+        "max_count": 0
+      }
+    ],
+    "render_template": "<div class='paragraph'>\n  <p><strong>{{ paragraph_number }}</strong>) {{ content }}</p>\n  {% for child in children %}\n  {{ child }}\n  {% endfor %}\n</div>",
+    "metadata": {
+      "category": "content",
+      "icon": "text"
+    }
+  },
+  {
+    "template_id": "tpl_subparagraph",
+    "name": "Υποπαράγραφος (Sub-paragraph)",
+    "description": "A sub-paragraph (indent level 2)",
+    "fields": [
+      {
+        "field_id": "number",
+        "label": "Αριθμός (Number)",
+        "field_type": "text",
+        "required": false,
+        "default_value": ""
+      },
+      {
+        "field_id": "content",
+        "label": "Κείμενο (Content)",
+        "field_type": "textarea",
+        "required": true,
+        "default_value": ""
+      }
+    ],
+    "child_slots": [],
+    "render_template": "<div class='subparagraph' style='margin-left: 40px;'>\n  <p><strong>{{ number }}</strong>) {{ content }}</p>\n</div>",
+    "metadata": {
+      "category": "content"
+    }
+  },
+  {
+    "template_id": "tpl_header",
+    "name": "Κεφάλαιο (Chapter/Header)",
+    "description": "A chapter or section header",
+    "fields": [
+      {
+        "field_id": "level",
+        "label": "Επίπεδο (Level 1-3)",
+        "field_type": "select",
+        "required": true,
+        "default_value": "1",
+        "options": [
+          {"label": "Level 1 (Main)", "value": "1"},
+          {"label": "Level 2 (Sub)", "value": "2"},
+          {"label": "Level 3 (Minor)", "value": "3"}
+        ]
+      },
+      {
+        "field_id": "title",
+        "label": "Τίτλος (Title)",
+        "field_type": "text",
+        "required": true,
+        "default_value": ""
+      }
+    ],
+    "child_slots": [],
+    "render_template": "{% set h = 'h' + level %}<{{ h }}>{{ title }}</{{ h }}>",
+    "metadata": {
+      "category": "structure"
+    }
+  },
+  {
+    "template_id": "tpl_signature",
+    "name": "Υπογραφή (Signature Block)",
+    "description": "Signature block with date and authority",
+    "fields": [
+      {
+        "field_id": "date",
+        "label": "Ημερομηνία (Date)",
+        "field_type": "date",
+        "required": true,
+        "default_value": ""
+      },
+      {
+        "field_id": "authority",
+        "label": "Αρχή (Authority/Title)",
+        "field_type": "text",
+        "required": true,
+        "default_value": "Πρόεδρος"
+      },
+      {
+        "field_id": "name",
+        "label": "Όνομα (Name)",
+        "field_type": "text",
+        "required": true,
+        "default_value": ""
+      }
+    ],
+    "child_slots": [],
+    "render_template": "<div class='signature'>\n  <p>{{ authority }}</p>\n  <p style='margin-top: 60px;'>_______________</p>\n  <p>{{ name }}</p>\n  <p>{{ date }}</p>\n</div>",
+    "metadata": {
+      "category": "meta"
+    }
+  }
+]

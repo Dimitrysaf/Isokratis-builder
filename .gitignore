@@ -1,0 +1,46 @@
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Database (user data — not committed)
+~/.isokratis/
+*.sqlite
+*.db
+
+# Exported / temp files
+/tmp/
+*.html
+*.tex
+*.xml
+*.pdf
+
+# Project meta docs
+PROJECT_SUMMARY.md
+QUICKSTART.md
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
