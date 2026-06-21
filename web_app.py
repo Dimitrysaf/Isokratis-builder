@@ -25,16 +25,22 @@ version_repo = VersionRepository(str(DB_PATH))
 
 
 def _sync_templates():
-    """Load JSON template files into DB on startup."""
+    """Load JSON template files into DB; remove any DB entries whose file was deleted."""
     templates_dir = Path(__file__).parent / "templates"
+    file_ids: set[str] = set()
     for path in sorted(templates_dir.rglob("*.json")):
         try:
             with open(path, "r", encoding="utf-8") as f:
                 tpl_data = json.load(f)
             template = Template.from_dict(tpl_data)
             template_repo.save_template(template)
+            file_ids.add(template.template_id)
         except Exception as e:
             print(f"Warning: could not load template {path.name}: {e}")
+    # Remove DB templates whose JSON files no longer exist
+    for tpl in template_repo.load_all_templates():
+        if tpl.template_id not in file_ids:
+            template_repo.delete_template(tpl.template_id)
 
 
 def _get_templates_dict():
