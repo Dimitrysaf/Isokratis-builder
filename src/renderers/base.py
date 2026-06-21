@@ -63,8 +63,9 @@ class BaseRenderer(ABC):
         elif node_type == "text":
             return node.data.get('content', '')
         else:
-            # For document root and any unrecognised types, render children so content is never lost
-            return "\n".join(self.render_node(child, context) for child in node.children)
+            # Root / unrecognised nodes: merge own data into context so children can reference metadata
+            merged = {**context, **node.data}
+            return "\n".join(self.render_node(child, merged) for child in node.children)
 
     def _escape_html(self, text: str) -> str:
         """Escape HTML special characters."""

@@ -309,8 +309,11 @@ def _generate_pdf_bytes(doc, tmpl_dict) -> bytes:
     from fpdf import FPDF
 
     renderer = HTMLRenderer(tmpl_dict)
+    # Seed root context with doc.title as fallback if not already in root.data
+    if 'title' not in doc.root.data:
+        doc.root.data['title'] = doc.title
     html_body = renderer.render_node(doc.root)
-    full_html = f"<h1>{_esc(doc.title)}</h1>{html_body}"
+    full_html = html_body  # root renders nothing itself; children carry all content
 
     extractor = _HTMLExtractor()
     extractor.feed(full_html)
@@ -359,6 +362,8 @@ def _generate_pdf_bytes(doc, tmpl_dict) -> bytes:
 def _build_preview_html(doc, tmpl_dict):
     """Build an HTML preview string (used for the HTML fallback endpoint)."""
     renderer = HTMLRenderer(tmpl_dict)
+    if 'title' not in doc.root.data:
+        doc.root.data['title'] = doc.title
     body = renderer.render_node(doc.root)
     empty = '<p style="text-align:center;color:#aaa;margin-top:60pt;font-style:italic;">Document is empty — add nodes to see content here.</p>'
     return f"""<!DOCTYPE html>
@@ -381,7 +386,6 @@ def _build_preview_html(doc, tmpl_dict):
 </style>
 </head>
 <body>
-<h1>{_esc(doc.title)}</h1>
 {body if body.strip() else empty}
 </body>
 </html>"""
