@@ -366,12 +366,12 @@ def _generate_pdf_bytes(doc, tmpl_dict) -> bytes:
             pdf.ln(1)
         elif tag == "li":
             pdf.set_font("DejaVu", "", 11)
-            pdf.multi_cell(effective_width - 5, 6.5, f"\u2022  {text}", align="L",
+            pdf.multi_cell(effective_width - 5, 5, f"\u2022  {text}", align="L",
                            new_x="LMARGIN", new_y="NEXT")
         else:  # p, td, th, blockquote, etc.
             pdf.set_font("DejaVu", "", 11)
-            pdf.multi_cell(effective_width, 6.5, text, align="J", new_x="LMARGIN", new_y="NEXT")
-            pdf.ln(2)
+            pdf.multi_cell(effective_width, 5, text, align="J", new_x="LMARGIN", new_y="NEXT")
+            pdf.ln(1)
 
     return bytes(pdf.output())
 
@@ -391,7 +391,7 @@ def _build_preview_html(doc, tmpl_dict):
   @page {{ size: A4; margin: 25mm 20mm; }}
   body {{
     font-family: "Georgia", "Times New Roman", serif;
-    font-size: 11pt; line-height: 1.75; color: #111;
+    font-size: 11pt; line-height: 1.45; color: #111;
     margin: 0; padding: 0;
   }}
   h1 {{ font-size: 15pt; font-weight: bold; margin-bottom: 16pt; text-align: center; border-bottom: 1.5pt solid #000; padding-bottom: 6pt; }}
