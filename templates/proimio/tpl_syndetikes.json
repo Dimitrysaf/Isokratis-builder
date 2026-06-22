@@ -39,6 +39,6 @@
       "max_count": 0
     }
   ],
-  "render_template": "{% if ekfrasi == 'exontas_ypopsin' %}<p><strong>Έχοντας υπόψη:</strong></p>{% for c in children %}<p>{{ loop.index }}) {{ c | striptags }}</p>{% endfor %}{% elif ekfrasi %}{% set e = {'protas_ypsy': 'Προτάσει του Υπουργικού Συμβουλίου', 'protas_ypourgou': 'Με πρόταση του Υπουργού', 'katopini_protas': 'Κατόπιν πρότασης', 'ektelesi': 'Σε εκτέλεση αποφάσεως', 'symfwna': 'Σύμφωνα με το πρακτικό'} %}<p>{{ e.get(ekfrasi, ekfrasi) }}{% if armodiothta %} {{ armodiothta }}{% endif %}</p>{% for c in children %}<p>{{ loop.index }}) {{ c | striptags }}</p>{% endfor %}{% endif %}",
+  "render_template": "{% if ekfrasi == 'exontas_ypopsin' %}<p><strong>Έχοντας υπόψη:</strong></p>{% for c in children %}<p>{% if children|length > 1 %}{{ loop.index }}) {% endif %}{{ c | striptags }}</p>{% endfor %}{% elif ekfrasi %}{% set e = {'protas_ypsy': 'Προτάσει του Υπουργικού Συμβουλίου', 'protas_ypourgou': 'Με πρόταση του Υπουργού', 'katopini_protas': 'Κατόπιν πρότασης', 'ektelesi': 'Σε εκτέλεση αποφάσεως', 'symfwna': 'Σύμφωνα με το πρακτικό'} %}<p>{{ e.get(ekfrasi, ekfrasi) }}{% if armodiothta %} {{ armodiothta }}{% endif %}</p>{% for c in children %}<p>{% if children|length > 1 %}{{ loop.index }}) {% endif %}{{ c | striptags }}</p>{% endfor %}{% endif %}",
   "metadata": {"category": "προοίμιο", "folder": "proimio", "folder_label": "Προοίμιο", "folder_order": 1}
 }

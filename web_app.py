@@ -277,8 +277,8 @@ def delete_template(template_id):
 
 # ── PDF generation helpers ─────────────────────────────────
 
-_DEJAVU      = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-_DEJAVU_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+_DEJAVU      = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"
+_DEJAVU_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"
 
 _HEADING_TAGS   = {"h1", "h2", "h3", "h4", "h5", "h6"}
 _BLOCK_TAGS     = _HEADING_TAGS | {"p", "li", "blockquote", "pre", "td", "th"}

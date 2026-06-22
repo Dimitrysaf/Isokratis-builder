@@ -43,6 +43,6 @@
       "max_count": 0
     }
   ],
-  "render_template": "{% if energeia %}{% if energeia == 'allo' %}<p><strong>{{ allo_keimeno | upper }}</strong></p>{% else %}{% set e = {'psifizouwe': 'ΨΗΦΙΖΟΥΜΕ', 'ekdidouwe': 'ΕΚΔΙΔΟΥΜΕ', 'apofasizouwe': 'ΑΠΟΦΑΣΙΖΟΥΜΕ', 'egkrinouwe': 'ΕΓΚΡΙΝΟΥΜΕ', 'tropopoioume': 'ΤΡΟΠΟΠΟΙΟΥΜΕ', 'katargoume': 'ΚΑΤΑΡΓΟΥΜΕ', 'prokirisuwe': 'ΠΡΟΚΗΡΥΣΣΟΥΜΕ', 'sygkrotoume': 'ΣΥΓΚΡΟΤΟΥΜΕ', 'anatitheume': 'ΑΝΑΘΕΤΟΥΜΕ'} %}<p><strong>{{ e.get(energeia, energeia) }}:</strong></p>{% endif %}{% endif %}{% for c in children %}<p>{{ loop.index }}) {{ c | striptags }}</p>{% endfor %}",
+  "render_template": "{% if energeia %}{% if energeia == 'allo' %}<p><strong>{{ allo_keimeno | upper }}</strong></p>{% else %}{% set e = {'psifizouwe': 'ΨΗΦΙΖΟΥΜΕ', 'ekdidouwe': 'ΕΚΔΙΔΟΥΜΕ', 'apofasizouwe': 'ΑΠΟΦΑΣΙΖΟΥΜΕ', 'egkrinouwe': 'ΕΓΚΡΙΝΟΥΜΕ', 'tropopoioume': 'ΤΡΟΠΟΠΟΙΟΥΜΕ', 'katargoume': 'ΚΑΤΑΡΓΟΥΜΕ', 'prokirisuwe': 'ΠΡΟΚΗΡΥΣΣΟΥΜΕ', 'sygkrotoume': 'ΣΥΓΚΡΟΤΟΥΜΕ', 'anatitheume': 'ΑΝΑΘΕΤΟΥΜΕ'} %}<p><strong>{{ e.get(energeia, energeia) }}:</strong></p>{% endif %}{% endif %}{% for c in children %}<p>{% if children|length > 1 %}{{ loop.index }}) {% endif %}{{ c | striptags }}</p>{% endfor %}",
   "metadata": {"category": "προοίμιο", "folder": "proimio", "folder_label": "Προοίμιο", "folder_order": 1}
 }
