@@ -81,6 +81,7 @@ def new_document():
 
 @app.route("/documents/<doc_id>")
 def edit_document(doc_id):
+    _sync_templates()
     doc = doc_repo.load_document(doc_id)
     if not doc:
         return "Document not found", 404
@@ -448,4 +449,4 @@ def _esc(s):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=True)
