@@ -63,19 +63,28 @@ class TemplateChildSlot:
     A slot where other template instances can be inserted.
     - slot_id: unique identifier
     - label: display name
-    - allowed_template_ids: list of template IDs that can be inserted; empty = all
+    - allowed_template_ids: explicit list of template IDs allowed; empty = use allowed_folders
+    - allowed_folders: list of folder keys allowed; empty + no allowed_template_ids = all
     - min_count: minimum number of children required
     - max_count: maximum; 0 = unlimited
     """
     slot_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     label: str = ""
-    allowed_template_ids: List[str] = field(default_factory=list)  # empty = any
+    allowed_template_ids: List[str] = field(default_factory=list)
+    allowed_folders: List[str] = field(default_factory=list)
     min_count: int = 0
     max_count: int = 0  # 0 = unlimited
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dict."""
-        return asdict(self)
+        return {
+            "slot_id": self.slot_id,
+            "label": self.label,
+            "allowed_template_ids": self.allowed_template_ids,
+            "allowed_folders": self.allowed_folders,
+            "min_count": self.min_count,
+            "max_count": self.max_count,
+        }
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'TemplateChildSlot':
@@ -84,6 +93,7 @@ class TemplateChildSlot:
             slot_id=data.get("slot_id", str(uuid.uuid4())),
             label=data.get("label", ""),
             allowed_template_ids=data.get("allowed_template_ids", []),
+            allowed_folders=data.get("allowed_folders", []),
             min_count=data.get("min_count", 0),
             max_count=data.get("max_count", 0),
         )

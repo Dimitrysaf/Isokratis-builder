@@ -27,14 +27,14 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "π.χ. Οικονομικών — για «Με πρόταση Υπουργού» ή αριθμό αποφάσεως. Αφήστε κενό για «Έχοντας υπόψη»."
+      "help_text": "π.χ. Οικονομικών — για «Με πρόταση Υπουργού» ή αριθμό αποφάσεως."
     }
   ],
   "child_slots": [
     {
       "slot_id": "periexomeno",
       "label": "Αναφορές / Παράγραφοι",
-      "allowed_template_ids": ["tpl_anafora", "tpl_paragrafos"],
+      "allowed_folders": ["anafores", "vasi"],
       "min_count": 0,
       "max_count": 0
     }

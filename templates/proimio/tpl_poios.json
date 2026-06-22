@@ -42,7 +42,7 @@
     {
       "slot_id": "paragrafoi",
       "label": "Παράγραφοι",
-      "allowed_template_ids": ["tpl_paragrafos"],
+      "allowed_folders": ["vasi"],
       "min_count": 0,
       "max_count": 0
     }

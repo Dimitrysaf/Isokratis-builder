@@ -1,17 +1,17 @@
 {
   "template_id": "tpl_proimio",
   "name": "Προοίμιο",
-  "description": "Φάκελος προοιμίου — περιέχει Ποιος, Με Τι, Τι Κάνει, και βασικά στοιχεία.",
+  "description": "Φάκελος προοιμίου — περιέχει Ποιος, Με Τι, Τι Κάνει, Αναφορές και βασικά στοιχεία.",
   "fields": [],
   "child_slots": [
     {
       "slot_id": "contenuto",
       "label": "Στοιχεία Προοιμίου",
-      "allowed_template_ids": ["tpl_poios", "tpl_syndetikes", "tpl_ti_kanei", "tpl_anafora", "tpl_paragrafos", "tpl_aplo_keimeno"],
+      "allowed_folders": ["proimio", "anafores", "vasi"],
       "min_count": 0,
       "max_count": 0
     }
   ],
   "render_template": "{% for c in children %}{{ c }}{% endfor %}",
-  "metadata": {"category": "δομή", "is_category": true, "folder": "proimio", "folder_label": "Προοίμιο", "folder_order": 1}
+  "metadata": {"category": "δομή", "is_category": true, "folder": "struktura", "folder_label": "Δομή", "folder_order": 0}
 }
