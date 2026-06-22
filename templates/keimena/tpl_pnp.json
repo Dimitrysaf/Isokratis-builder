@@ -28,16 +28,29 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "π.χ. ΦΕΚ Α΄ 45/20.3.2020"
+      "help_text": "π.χ. ΦΕΚ Α΄ 55/11.3.2020"
+    },
+    {
+      "field_id": "katastasi_kyrosis",
+      "label": "Κατάσταση κύρωσης",
+      "field_type": "select",
+      "required": false,
+      "default_value": "Μη κυρωθείσα",
+      "options": [
+        {"label": "Μη κυρωθείσα",         "value": "Μη κυρωθείσα"},
+        {"label": "Κυρωθείσα",             "value": "Κυρωθείσα"},
+        {"label": "Μη κυρωθείσα-έληξε",   "value": "Μη κυρωθείσα-έληξε"}
+      ],
+      "help_text": ""
     },
     {
       "field_id": "kyrosi",
-      "label": "Κύρωση με νόμο (προαιρετικό)",
+      "label": "Κύρωση με νόμο (αν Κυρωθείσα)",
       "field_type": "text",
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "Αριθμός κυρωτικού νόμου, π.χ. ν. 4694/2020"
+      "help_text": "π.χ. άρθρο 1 του ν. 4682/2020"
     }
   ],
   "child_slots": [
@@ -50,6 +63,6 @@
       "max_count": 0
     }
   ],
-  "render_template": "<h1>ΠΡΑΞΗ ΝΟΜΟΘΕΤΙΚΟΥ ΠΕΡΙΕΧΟΜΕΝΟΥ</h1>{% if titlos %}<h2>{{ titlos }}</h2>{% endif %}{% if hm_ekdosis %}<p><strong>Ημ. έκδοσης:</strong> {{ hm_ekdosis }}</p>{% endif %}{% if fek %}<p><strong>ΦΕΚ:</strong> {{ fek }}</p>{% endif %}{% if kyrosi %}<p><strong>Κυρώθηκε με:</strong> {{ kyrosi }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "render_template": "<h1>ΠΡΑΞΗ ΝΟΜΟΘΕΤΙΚΟΥ ΠΕΡΙΕΧΟΜΕΝΟΥ</h1>{% if titlos %}<h2>{{ titlos }}</h2>{% endif %}{% if hm_ekdosis %}<p><strong>Ημ. έκδοσης:</strong> {{ hm_ekdosis }}</p>{% endif %}{% if fek %}<p>{{ fek }}</p>{% endif %}{% if katastasi_kyrosis %}<p><strong>Κύρωση:</strong> {{ katastasi_kyrosis }}{% if katastasi_kyrosis == 'Κυρωθείσα' and kyrosi %} — {{ kyrosi }}{% endif %}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
   "metadata": {"folder": "keimena", "folder_label": "Κείμενα", "folder_order": 3}
 }

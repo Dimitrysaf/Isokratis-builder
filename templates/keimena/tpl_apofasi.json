@@ -1,7 +1,7 @@
 {
   "template_id": "tpl_apofasi",
   "name": "Απόφαση (ΥΑ / ΚΥΑ)",
-  "description": "Υπουργική Απόφαση, Κοινή ΥΑ ή Κανονιστική Απόφαση.",
+  "description": "Υπουργική Απόφαση, Κοινή ΥΑ, Κανονιστική ή Απόφαση Ανεξ. Αρχής.",
   "fields": [
     {
       "field_id": "typos",
@@ -10,11 +10,13 @@
       "required": false,
       "default_value": "ΥΑ",
       "options": [
-        {"label": "ΥΑ",            "value": "ΥΑ"},
-        {"label": "ΚΥΑ",           "value": "ΚΥΑ"},
-        {"label": "Κανονιστική",   "value": "Κανονιστική"}
+        {"label": "ΥΑ",                          "value": "ΥΑ"},
+        {"label": "ΚΥΑ",                          "value": "ΚΥΑ"},
+        {"label": "Κανονιστική",                  "value": "Κανονιστική"},
+        {"label": "Ατομική",                      "value": "Ατομική"},
+        {"label": "Απόφαση Ανεξ. Αρχής",         "value": "Απόφαση Ανεξ. Αρχής"}
       ],
-      "help_text": ""
+      "help_text": "Για ΚΥΑ: συμπληρώστε πολλούς Εκδίδοντες στο αντίστοιχο child slot"
     },
     {
       "field_id": "arithmos",
@@ -41,7 +43,16 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "Για ΚΥΑ: όλοι οι συνυπογράφοντες φορείς"
+      "help_text": "Για ΚΥΑ: όλοι οι συνυπογράφοντες, π.χ. ΟΙΚΟΝΟΜΙΚΩΝ – ΥΓΕΙΑΣ"
+    },
+    {
+      "field_id": "ada",
+      "label": "ΑΔΑ (προαιρετικό)",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "Αριθμός Διαδικτυακής Ανάρτησης"
     },
     {
       "field_id": "fek",
@@ -79,6 +90,6 @@
       "max_count": 0
     }
   ],
-  "render_template": "<h1>{{ typos }}{% if arithmos %} {{ arithmos }}{% endif %}</h1>{% if thema %}<h2>{{ thema }}</h2>{% endif %}{% if ekdidontes %}<p><strong>Εκδίδοντες:</strong> {{ ekdidontes }}</p>{% endif %}{% if fek %}<p><strong>ΦΕΚ:</strong> {{ fek }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "render_template": "{% if typos == 'ΚΥΑ' %}<h1>ΟΙ ΥΠΟΥΡΓΟΙ</h1>{% if ekdidontes %}<h2>{{ ekdidontes }}</h2>{% endif %}{% else %}<h1>{{ typos }}{% if arithmos %} {{ arithmos }}{% endif %}</h1>{% if thema %}<h2>{{ thema }}</h2>{% endif %}{% if ekdidontes %}<p><strong>Εκδίδοντες:</strong> {{ ekdidontes }}</p>{% endif %}{% endif %}{% if ada %}<p><strong>ΑΔΑ:</strong> {{ ada }}</p>{% endif %}{% if fek %}<p>{{ fek }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
   "metadata": {"folder": "keimena", "folder_label": "Κείμενα", "folder_order": 3}
 }

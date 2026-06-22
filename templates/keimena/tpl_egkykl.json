@@ -10,7 +10,7 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": ""
+      "help_text": "π.χ. ΔΕΑΦ 1027/2024"
     },
     {
       "field_id": "ada",
@@ -19,7 +19,22 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "Αριθμός Διαδικτυακής Ανάρτησης"
+      "help_text": "π.χ. Ψ1Α2Ω…"
+    },
+    {
+      "field_id": "eidos",
+      "label": "Είδος",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "— Επιλέξτε —",            "value": ""},
+        {"label": "Ερμηνευτική",              "value": "Ερμηνευτική"},
+        {"label": "Οδηγίες εφαρμογής",        "value": "Οδηγίες εφαρμογής"},
+        {"label": "Διαταγή",                  "value": "Διαταγή"},
+        {"label": "Ενημερωτική",              "value": "Ενημερωτική"}
+      ],
+      "help_text": ""
     },
     {
       "field_id": "thema",
@@ -37,7 +52,7 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": ""
+      "help_text": "π.χ. ΑΑΔΕ"
     },
     {
       "field_id": "hmerominia",
@@ -68,6 +83,6 @@
       "max_count": 0
     }
   ],
-  "render_template": "<h1>ΕΓΚΥΚΛΙΟΣ{% if ar_protokolloy %} αρ. {{ ar_protokolloy }}{% endif %}</h1>{% if ada %}<p><strong>ΑΔΑ:</strong> {{ ada }}</p>{% endif %}{% if thema %}<h2>{{ thema }}</h2>{% endif %}{% if ekdidon %}<p><strong>Εκδίδων:</strong> {{ ekdidon }}</p>{% endif %}{% if hmerominia %}<p><strong>Ημερομηνία:</strong> {{ hmerominia }}</p>{% endif %}{% if keimeno %}<p>{{ keimeno }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "render_template": "{% if ekdidon %}<p><strong>{{ ekdidon }}</strong></p>{% endif %}<h1>ΕΓΚΥΚΛΙΟΣ{% if ar_protokolloy %} — Αρ. Πρωτ.: {{ ar_protokolloy }}{% endif %}</h1>{% if ada %}<p><strong>ΑΔΑ:</strong> {{ ada }}</p>{% endif %}{% if eidos %}<p><strong>Είδος:</strong> {{ eidos }}</p>{% endif %}{% if thema %}<p><strong>ΘΕΜΑ:</strong> {{ thema }}</p>{% endif %}{% if hmerominia %}<p><strong>Ημερομηνία:</strong> {{ hmerominia }}</p>{% endif %}{% if keimeno %}<p>{{ keimeno }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
   "metadata": {"folder": "keimena", "folder_label": "Κείμενα", "folder_order": 3}
 }

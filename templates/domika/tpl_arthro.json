@@ -19,7 +19,7 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": ""
+      "help_text": "π.χ. Ορισμοί, Σκοπός"
     },
     {
       "field_id": "katastasi",
@@ -31,18 +31,19 @@
         {"label": "Ισχύον",          "value": "Ισχύον"},
         {"label": "Καταργηθέν",      "value": "Καταργηθέν"},
         {"label": "Αντικατασταθέν",  "value": "Αντικατασταθέν"},
+        {"label": "Τροποποιηθέν",    "value": "Τροποποιηθέν"},
         {"label": "Προστεθέν",       "value": "Προστεθέν"}
       ],
       "help_text": ""
     },
     {
       "field_id": "me_vasi",
-      "label": "Με βάση (αν καταργήθηκε/αντικαταστάθηκε)",
+      "label": "Με βάση (αν δεν Ισχύον)",
       "field_type": "text",
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "Αναφορά στη νομική βάση κατάργησης/αντικατάστασης"
+      "help_text": "π.χ. άρθρο 40 του ν. 5000/2024"
     }
   ],
   "child_slots": [
@@ -55,6 +56,6 @@
       "max_count": 0
     }
   ],
-  "render_template": "<h3>Άρθρο {{ arithmos }}{% if titlos %} — {{ titlos }}{% endif %}</h3>{% if katastasi and katastasi != 'Ισχύον' %}<p><em>[ {{ katastasi }}{% if me_vasi %} — {{ me_vasi }}{% endif %} ]</em></p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "render_template": "<h3>Άρθρο {{ arithmos }}{% if titlos %}<br/><span style=\"font-weight:normal\">{{ titlos }}</span>{% endif %}</h3>{% if katastasi and katastasi != 'Ισχύον' %}<p><em>[{{ katastasi }}{% if me_vasi %} — {{ me_vasi }}{% endif %}]</em></p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
   "metadata": {"folder": "domika", "folder_label": "Δομικά", "folder_order": 1}
 }

@@ -10,7 +10,7 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "π.χ. 13/2018"
+      "help_text": "π.χ. 80/2016"
     },
     {
       "field_id": "titlos",
@@ -22,13 +22,37 @@
       "help_text": ""
     },
     {
+      "field_id": "eidos",
+      "label": "Είδος",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "— Επιλέξτε —",     "value": ""},
+        {"label": "Κανονιστικό",       "value": "Κανονιστικό"},
+        {"label": "Εκτελεστικό",       "value": "Εκτελεστικό"},
+        {"label": "Οργανισμός",        "value": "Οργανισμός"},
+        {"label": "Κωδικοποιητικό",    "value": "Κωδικοποιητικό"}
+      ],
+      "help_text": ""
+    },
+    {
       "field_id": "eisigitis_foreis",
       "label": "Εισηγητής φορέας",
       "field_type": "text",
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "π.χ. Υπουργείο Εσωτερικών"
+      "help_text": "π.χ. Υπουργείο Οικονομικών"
+    },
+    {
+      "field_id": "gnomodoitisi_ste",
+      "label": "Γνωμοδότηση ΣτΕ (προαιρετικό)",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "Αριθμός πρακτικού ΣτΕ, π.χ. 135/2016"
     },
     {
       "field_id": "fek",
@@ -37,7 +61,7 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "π.χ. ΦΕΚ Α΄ 23/15.2.2018"
+      "help_text": "π.χ. ΦΕΚ Α΄ 145/1.8.2016"
     }
   ],
   "child_slots": [
@@ -58,6 +82,6 @@
       "max_count": 0
     }
   ],
-  "render_template": "<h1>ΠΡΟΕΔΡΙΚΟ ΔΙΑΤΑΓΜΑ ΥΠ΄ ΑΡΙΘ. {{ arithmos }}</h1>{% if titlos %}<h2>{{ titlos }}</h2>{% endif %}{% if eisigitis_foreis %}<p><strong>Εισηγητής φορέας:</strong> {{ eisigitis_foreis }}</p>{% endif %}{% if fek %}<p><strong>ΦΕΚ:</strong> {{ fek }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "render_template": "<h1>ΠΡΟΕΔΡΙΚΟ ΔΙΑΤΑΓΜΑ ΥΠ' ΑΡΙΘΜ. {{ arithmos }}</h1>{% if titlos %}<h2>{{ titlos }}</h2>{% endif %}{% if eidos %}<p><strong>Είδος:</strong> {{ eidos }}</p>{% endif %}{% if eisigitis_foreis %}<p><strong>Εισηγητής φορέας:</strong> {{ eisigitis_foreis }}</p>{% endif %}{% if gnomodoitisi_ste %}<p><strong>Γνωμοδότηση ΣτΕ:</strong> {{ gnomodoitisi_ste }}</p>{% endif %}{% if fek %}<p>{{ fek }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
   "metadata": {"folder": "keimena", "folder_label": "Κείμενα", "folder_order": 3}
 }

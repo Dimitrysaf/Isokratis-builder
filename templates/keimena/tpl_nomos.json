@@ -32,18 +32,19 @@
         {"label": "Τυπικός",            "value": "Τυπικός"},
         {"label": "Κυρωτικός",          "value": "Κυρωτικός"},
         {"label": "Κωδικοποιητικός",    "value": "Κωδικοποιητικός"},
-        {"label": "Ερμηνευτικός",       "value": "Ερμηνευτικός"}
+        {"label": "Ερμηνευτικός",       "value": "Ερμηνευτικός"},
+        {"label": "Οργανικός",          "value": "Οργανικός"}
       ],
       "help_text": ""
     },
     {
-      "field_id": "kyroymenο",
+      "field_id": "kyroymenо",
       "label": "Κυρούμενο κείμενο (αν Κυρωτικός)",
       "field_type": "text",
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "Αναφορά σε ΕΕ-Πράξη ή Σύμβαση που κυρώνεται"
+      "help_text": "Αναφορά σε ΕΕ-Πράξη ή Διεθνή Σύμβαση που κυρώνεται"
     },
     {
       "field_id": "hm_psifisis",
@@ -70,16 +71,17 @@
       "required": false,
       "default_value": "",
       "options": [
-        {"label": "— Επιλέξτε —",              "value": ""},
-        {"label": "Από δημοσίευση",             "value": "Από δημοσίευση"},
-        {"label": "Από ημερομηνία",             "value": "Από ημερομηνία"},
-        {"label": "Όπως ορίζει το ίδιο",        "value": "Όπως ορίζει το ίδιο"}
+        {"label": "— Επιλέξτε —",                   "value": ""},
+        {"label": "Από δημοσίευση",                  "value": "Από δημοσίευση"},
+        {"label": "Από ορισμένη ημερομηνία",         "value": "Από ορισμένη ημερομηνία"},
+        {"label": "Αναδρομική",                      "value": "Αναδρομική"},
+        {"label": "Όπως ορίζει το ίδιο",             "value": "Όπως ορίζει το ίδιο"}
       ],
       "help_text": ""
     },
     {
       "field_id": "hm_enarxis",
-      "label": "Ημ. έναρξης (αν από ημερομηνία)",
+      "label": "Ημ. έναρξης (αν από ορισμένη / αναδρομική)",
       "field_type": "date",
       "required": false,
       "default_value": null,
@@ -93,10 +95,11 @@
       "required": false,
       "default_value": "Σε ισχύ",
       "options": [
-        {"label": "Σε ισχύ",           "value": "Σε ισχύ"},
-        {"label": "Τροποποιημένος",     "value": "Τροποποιημένος"},
-        {"label": "Καταργημένος",       "value": "Καταργημένος"},
-        {"label": "Κωδικοποιημένος",    "value": "Κωδικοποιημένος"}
+        {"label": "Σε ισχύ",                  "value": "Σε ισχύ"},
+        {"label": "Τροποποιημένος",            "value": "Τροποποιημένος"},
+        {"label": "Μερικώς καταργημένος",      "value": "Μερικώς καταργημένος"},
+        {"label": "Καταργημένος",              "value": "Καταργημένος"},
+        {"label": "Κωδικοποιημένος",           "value": "Κωδικοποιημένος"}
       ],
       "help_text": ""
     }
@@ -119,6 +122,6 @@
       "max_count": 0
     }
   ],
-  "render_template": "<h1>ΝΟΜΟΣ ΥΠ΄ ΑΡΙΘ. {{ arithmos }}</h1>{% if titlos %}<h2>{{ titlos }}</h2>{% endif %}{% if eidos %}<p><strong>Είδος:</strong> {{ eidos }}{% if eidos == 'Κυρωτικός' and kyroymenο %} — Κυρούμενο: {{ kyroymenο }}{% endif %}</p>{% endif %}{% if hm_psifisis %}<p><strong>Ψηφίστηκε:</strong> {{ hm_psifisis }}</p>{% endif %}{% if fek %}<p><strong>ΦΕΚ:</strong> {{ fek }}</p>{% endif %}{% if enarxi_isxios %}<p><strong>Έναρξη ισχύος:</strong> {{ enarxi_isxios }}{% if enarxi_isxios == 'Από ημερομηνία' and hm_enarxis %} ({{ hm_enarxis }}){% endif %}</p>{% endif %}{% if katastasi %}<p><strong>Κατάσταση:</strong> {{ katastasi }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "render_template": "<h1>ΝΟΜΟΣ ΥΠ' ΑΡΙΘΜ. {{ arithmos }}</h1>{% if titlos %}<h2>{{ titlos }}</h2>{% endif %}{% if eidos %}<p><strong>Είδος:</strong> {{ eidos }}{% if eidos == 'Κυρωτικός' and kyroymenо %} — {{ kyroymenо }}{% endif %}</p>{% endif %}{% if hm_psifisis %}<p><strong>Ψηφίστηκε:</strong> {{ hm_psifisis }}</p>{% endif %}{% if fek %}<p>{{ fek }}</p>{% endif %}{% if enarxi_isxios %}<p><strong>Έναρξη ισχύος:</strong> {{ enarxi_isxios }}{% if hm_enarxis and (enarxi_isxios == 'Από ορισμένη ημερομηνία' or enarxi_isxios == 'Αναδρομική') %} ({{ hm_enarxis }}){% endif %}</p>{% endif %}{% if katastasi %}<p><strong>Κατάσταση:</strong> {{ katastasi }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
   "metadata": {"folder": "keimena", "folder_label": "Κείμενα", "folder_order": 3}
 }

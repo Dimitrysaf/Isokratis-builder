@@ -10,7 +10,7 @@
       "required": true,
       "default_value": "",
       "options": [],
-      "help_text": "π.χ. ν. 4624/2019, ΠΔ 13/2018, ΦΕΚ Β΄ 1234/2020"
+      "help_text": "π.χ. ν. 4624/2019, ΠΔ 13/2018, ΦΕΚ Β΄ 1234/2020, Κανονισμός (ΕΕ) 2016/679"
     },
     {
       "field_id": "eidos_schesis",
@@ -22,11 +22,14 @@
         {"label": "— Επιλέξτε —",            "value": ""},
         {"label": "αναφορά",                  "value": "αναφορά"},
         {"label": "τροποποιεί",               "value": "τροποποιεί"},
-        {"label": "καταργεί",                 "value": "καταργεί"},
         {"label": "αντικαθιστά",              "value": "αντικαθιστά"},
+        {"label": "καταργεί",                 "value": "καταργεί"},
+        {"label": "προσθέτει",                "value": "προσθέτει"},
         {"label": "κατ'εξουσιοδότηση",        "value": "κατ'εξουσιοδότηση"},
         {"label": "κωδικοποιεί",              "value": "κωδικοποιεί"},
-        {"label": "κυρώνει",                  "value": "κυρώνει"}
+        {"label": "κυρώνει",                  "value": "κυρώνει"},
+        {"label": "παραπέμπει",               "value": "παραπέμπει"},
+        {"label": "ερμηνεύει",                "value": "ερμηνεύει"}
       ],
       "help_text": ""
     },
@@ -41,6 +44,6 @@
     }
   ],
   "child_slots": [],
-  "render_template": "<span>{{ stohos }}{% if eidos_schesis %} [{{ eidos_schesis }}]{% endif %}{% if emveleia %} — {{ emveleia }}{% endif %}</span>",
+  "render_template": "{% if eidos_schesis == \"κατ'εξουσιοδότηση\" %}κατ' εξουσιοδότηση{% if emveleia %} της {{ emveleia }}{% endif %} του {{ stohos }}{% else %}<span>{{ stohos }}{% if eidos_schesis %} [{{ eidos_schesis }}]{% endif %}{% if emveleia %} — {{ emveleia }}{% endif %}</span>{% endif %}",
   "metadata": {"folder": "shared", "folder_label": "Κοινά", "folder_order": 0}
 }
