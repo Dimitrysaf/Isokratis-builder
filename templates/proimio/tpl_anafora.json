@@ -53,10 +53,10 @@
       "required": false,
       "default_value": "",
       "options": [],
-      "help_text": "π.χ. «Επιτελικό Κράτος: οργάνωση, λειτουργία...»"
+      "help_text": "π.χ. Επιτελικό Κράτος: οργάνωση, λειτουργία..."
     }
   ],
   "child_slots": [],
-  "render_template": "{% set lbl = {'syntagma': 'Τις διατάξεις του Συντάγματος', 'ee_odigia': 'Την Οδηγία (ΕΕ)', 'ee_kanonismos': 'Τον Κανονισμό (ΕΕ)', 'nomos_exousiod': 'Τις διατάξεις', 'pd_diorismos': 'Το Π.Δ.', 'metavivasi': 'Την υπ\\' αρ. απόφαση ανάθεσης αρμοδιοτήτων', 'proigeni': 'Τον ν. / Την υπ\\' αρ. απόφαση', 'tropopoiisi': 'Την υπ\\' αρ. απόφαση, όπως τροποποιήθηκε και ισχύει', 'gnomodoitisi': 'Το υπ\\' αρ. Πρακτικό Επεξεργασίας του ΣτΕ', 'gnomi_aai': 'Τη γνώμη / εισήγηση', 'eswterikoEgg': 'Το υπ\\' αρ. υπηρεσιακό σημείωμα', 'gdou': 'Την εισήγηση ΓΔΟΥ', 'ritra_kostous': 'Το γεγονός ότι από τις διατάξεις της παρούσας δεν προκαλείται δαπάνη', 'allo': ''} %}{{ lbl.get(typos,'') }}{% if arthro %} του άρθρου {{ arthro }}{% endif %}{% if ar %} {{ ar }}{% endif %}{% if titlos %} «{{ titlos }}»{% endif %}",
+  "render_template": "{% if typos == 'syntagma' %}Τις διατάξεις του Συντάγματος{% elif typos == 'ee_odigia' %}Την Οδηγία (ΕΕ){% elif typos == 'ee_kanonismos' %}Τον Κανονισμό (ΕΕ){% elif typos == 'nomos_exousiod' %}Τις διατάξεις{% elif typos == 'pd_diorismos' %}Το Π.Δ.{% elif typos == 'metavivasi' %}Την απόφαση ανάθεσης αρμοδιοτήτων{% elif typos == 'proigeni' %}Τον ν. / Την απόφαση{% elif typos == 'tropopoiisi' %}Την απόφαση, όπως τροποποιήθηκε και ισχύει{% elif typos == 'gnomodoitisi' %}Το Πρακτικό Επεξεργασίας του ΣτΕ{% elif typos == 'gnomi_aai' %}Τη γνώμη / εισήγηση{% elif typos == 'eswterikoEgg' %}Το υπηρεσιακό σημείωμα{% elif typos == 'gdou' %}Την εισήγηση ΓΔΟΥ{% elif typos == 'ritra_kostous' %}Το γεγονός ότι από τις διατάξεις της παρούσας δεν προκαλείται δαπάνη{% elif typos == 'allo' %}{% endif %}{% if arthro %} του άρθρου {{ arthro }}{% endif %}{% if ar %} {{ ar }}{% endif %}{% if titlos %} «{{ titlos }}»{% endif %}",
   "metadata": {"category": "αναφορές", "folder": "anafores", "folder_label": "Αναφορές", "folder_order": 2}
 }
