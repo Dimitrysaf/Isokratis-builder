@@ -22,6 +22,12 @@ class DocumentRepository:
         conn = get_connection(self.db_path)
         cursor = conn.cursor()
 
+        # Delete all existing nodes for this document so no orphans survive
+        cursor.execute("SELECT root_node_id FROM documents WHERE doc_id = ?", (doc.doc_id,))
+        existing = cursor.fetchone()
+        if existing and existing["root_node_id"]:
+            self._delete_nodes_recursive(cursor, existing["root_node_id"])
+
         # Save document metadata
         cursor.execute("""
             INSERT OR REPLACE INTO documents
@@ -36,7 +42,7 @@ class DocumentRepository:
             json.dumps(doc.metadata),
         ))
 
-        # Save all nodes recursively
+        # Save all nodes fresh
         self._save_nodes_recursive(cursor, doc.root, None)
 
         conn.commit()
