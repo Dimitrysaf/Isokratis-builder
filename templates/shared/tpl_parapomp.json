@@ -44,6 +44,6 @@
     }
   ],
   "child_slots": [],
-  "render_template": "{% if eidos_schesis == \"κατ'εξουσιοδότηση\" %}κατ' εξουσιοδότηση{% if emveleia %} της {{ emveleia }}{% endif %} του {{ stohos }}{% else %}<span>{{ stohos }}{% if eidos_schesis %} [{{ eidos_schesis }}]{% endif %}{% if emveleia %} — {{ emveleia }}{% endif %}</span>{% endif %}",
+  "render_template": "<p>{{ stohos }}{% if eidos_schesis %} [{{ eidos_schesis }}]{% endif %}{% if emveleia %} — {{ emveleia }}{% endif %}</p>",
   "metadata": {"folder": "shared", "folder_label": "Κοινά", "folder_order": 0}
 }

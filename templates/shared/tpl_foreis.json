@@ -43,6 +43,6 @@
     }
   ],
   "child_slots": [],
-  "render_template": "<span>{{ onoma }}{% if eidos %} ({{ eidos }}){% endif %}{% if proistamenos %}, Προϊστ.: {{ proistamenos }}{% endif %}</span>",
+  "render_template": "<p>{{ onoma }}{% if eidos %} ({{ eidos }}){% endif %}{% if proistamenos %}, Προϊστ.: {{ proistamenos }}{% endif %}</p>",
   "metadata": {"folder": "shared", "folder_label": "Κοινά", "folder_order": 0}
 }
