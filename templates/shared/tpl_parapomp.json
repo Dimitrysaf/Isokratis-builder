@@ -1,0 +1,46 @@
+{
+  "template_id": "tpl_parapomp",
+  "name": "Παραπομπή",
+  "description": "Νομική αναφορά / citation — σε νόμο, ΠΔ, ΥΑ, άρθρο, ΦΕΚ ή ΕΕ-πράξη.",
+  "fields": [
+    {
+      "field_id": "stohos",
+      "label": "Στόχος",
+      "field_type": "text",
+      "required": true,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. ν. 4624/2019, ΠΔ 13/2018, ΦΕΚ Β΄ 1234/2020"
+    },
+    {
+      "field_id": "eidos_schesis",
+      "label": "Είδος σχέσης",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "— Επιλέξτε —",            "value": ""},
+        {"label": "αναφορά",                  "value": "αναφορά"},
+        {"label": "τροποποιεί",               "value": "τροποποιεί"},
+        {"label": "καταργεί",                 "value": "καταργεί"},
+        {"label": "αντικαθιστά",              "value": "αντικαθιστά"},
+        {"label": "κατ'εξουσιοδότηση",        "value": "κατ'εξουσιοδότηση"},
+        {"label": "κωδικοποιεί",              "value": "κωδικοποιεί"},
+        {"label": "κυρώνει",                  "value": "κυρώνει"}
+      ],
+      "help_text": ""
+    },
+    {
+      "field_id": "emveleia",
+      "label": "Εμβέλεια (προαιρετικό)",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. άρθρο 5 παρ. 2"
+    }
+  ],
+  "child_slots": [],
+  "render_template": "<span>{{ stohos }}{% if eidos_schesis %} [{{ eidos_schesis }}]{% endif %}{% if emveleia %} — {{ emveleia }}{% endif %}</span>",
+  "metadata": {"folder": "shared", "folder_label": "Κοινά", "folder_order": 0}
+}

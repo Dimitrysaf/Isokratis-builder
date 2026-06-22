@@ -1,0 +1,57 @@
+{
+  "template_id": "tpl_fek",
+  "name": "ΦΕΚ",
+  "description": "Φύλλο Εφημερίδας της Κυβέρνησης — στοιχεία δημοσίευσης.",
+  "fields": [
+    {
+      "field_id": "tevchos",
+      "label": "Τεύχος",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "— Επιλέξτε —", "value": ""},
+        {"label": "Α΄",           "value": "Α΄"},
+        {"label": "Β΄",           "value": "Β΄"},
+        {"label": "Γ΄",           "value": "Γ΄"},
+        {"label": "Δ΄",           "value": "Δ΄"},
+        {"label": "ΑΑΠ",          "value": "ΑΑΠ"},
+        {"label": "ΥΟΔΔ",         "value": "ΥΟΔΔ"},
+        {"label": "ΠΡΑΔΙΤ",       "value": "ΠΡΑΔΙΤ"},
+        {"label": "ΔΔΣ",          "value": "ΔΔΣ"},
+        {"label": "ΑΣΕΠ",         "value": "ΑΣΕΠ"}
+      ],
+      "help_text": ""
+    },
+    {
+      "field_id": "ar_fylloy",
+      "label": "Αριθμός φύλλου",
+      "field_type": "number",
+      "required": false,
+      "default_value": null,
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "etos",
+      "label": "Έτος",
+      "field_type": "number",
+      "required": false,
+      "default_value": null,
+      "options": [],
+      "help_text": "π.χ. 2024"
+    },
+    {
+      "field_id": "hmerominia",
+      "label": "Ημερομηνία",
+      "field_type": "date",
+      "required": false,
+      "default_value": null,
+      "options": [],
+      "help_text": ""
+    }
+  ],
+  "child_slots": [],
+  "render_template": "<span>ΦΕΚ {{ tevchos }} {{ ar_fylloy }}/{{ etos }}{% if hmerominia %} ({{ hmerominia }}){% endif %}</span>",
+  "metadata": {"folder": "fek", "folder_label": "ΦΕΚ", "folder_order": 2}
+}

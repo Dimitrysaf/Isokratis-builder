@@ -1,0 +1,63 @@
+{
+  "template_id": "tpl_pd",
+  "name": "Προεδρικό Διάταγμα (ΠΔ)",
+  "description": "Προεδρικό Διάταγμα που εκδίδεται κατ'εξουσιοδότηση νόμου.",
+  "fields": [
+    {
+      "field_id": "arithmos",
+      "label": "Αριθμός",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. 13/2018"
+    },
+    {
+      "field_id": "titlos",
+      "label": "Τίτλος",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "eisigitis_foreis",
+      "label": "Εισηγητής φορέας",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. Υπουργείο Εσωτερικών"
+    },
+    {
+      "field_id": "fek",
+      "label": "ΦΕΚ",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. ΦΕΚ Α΄ 23/15.2.2018"
+    }
+  ],
+  "child_slots": [
+    {
+      "slot_id": "nomiki_vasi",
+      "label": "Νομική βάση",
+      "allowed_template_ids": ["tpl_parapomp"],
+      "allowed_folders": [],
+      "min_count": 0,
+      "max_count": 0
+    },
+    {
+      "slot_id": "periexomeno",
+      "label": "Άρθρα",
+      "allowed_template_ids": ["tpl_arthro"],
+      "allowed_folders": [],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "<h1>ΠΡΟΕΔΡΙΚΟ ΔΙΑΤΑΓΜΑ ΥΠ΄ ΑΡΙΘ. {{ arithmos }}</h1>{% if titlos %}<h2>{{ titlos }}</h2>{% endif %}{% if eisigitis_foreis %}<p><strong>Εισηγητής φορέας:</strong> {{ eisigitis_foreis }}</p>{% endif %}{% if fek %}<p><strong>ΦΕΚ:</strong> {{ fek }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "metadata": {"folder": "keimena", "folder_label": "Κείμενα", "folder_order": 3}
+}

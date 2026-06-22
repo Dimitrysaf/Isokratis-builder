@@ -1,0 +1,44 @@
+{
+  "template_id": "tpl_foreis",
+  "name": "Φορέας",
+  "description": "Οργανισμός / φορέας έκδοσης ή αρμόδιος φορέας.",
+  "fields": [
+    {
+      "field_id": "onoma",
+      "label": "Όνομα",
+      "field_type": "text",
+      "required": true,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. Υπουργείο Οικονομικών"
+    },
+    {
+      "field_id": "eidos",
+      "label": "Είδος",
+      "field_type": "select",
+      "required": false,
+      "default_value": "",
+      "options": [
+        {"label": "— Επιλέξτε —",          "value": ""},
+        {"label": "Υπουργείο",              "value": "Υπουργείο"},
+        {"label": "Ανεξάρτητη Αρχή",       "value": "Ανεξάρτητη Αρχή"},
+        {"label": "ΝΠΔΔ",                   "value": "ΝΠΔΔ"},
+        {"label": "ΟΤΑ",                    "value": "ΟΤΑ"},
+        {"label": "Λοιπό",                  "value": "Λοιπό"}
+      ],
+      "help_text": ""
+    },
+    {
+      "field_id": "proistamenos",
+      "label": "Προϊστάμενος (προαιρετικό)",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    }
+  ],
+  "child_slots": [],
+  "render_template": "<span>{{ onoma }}{% if eidos %} ({{ eidos }}){% endif %}{% if proistamenos %}, Προϊστ.: {{ proistamenos }}{% endif %}</span>",
+  "metadata": {"folder": "shared", "folder_label": "Κοινά", "folder_order": 0}
+}

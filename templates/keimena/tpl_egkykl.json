@@ -1,0 +1,73 @@
+{
+  "template_id": "tpl_egkykl",
+  "name": "Εγκύκλιος",
+  "description": "Εγκύκλιος ερμηνευτικού ή οργανωτικού περιεχομένου.",
+  "fields": [
+    {
+      "field_id": "ar_protokolloy",
+      "label": "Αρ. πρωτοκόλλου",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "ada",
+      "label": "ΑΔΑ (προαιρετικό)",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "Αριθμός Διαδικτυακής Ανάρτησης"
+    },
+    {
+      "field_id": "thema",
+      "label": "Θέμα",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "ekdidon",
+      "label": "Εκδίδων φορέας",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "hmerominia",
+      "label": "Ημερομηνία",
+      "field_type": "date",
+      "required": false,
+      "default_value": null,
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "keimeno",
+      "label": "Κείμενο",
+      "field_type": "textarea",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    }
+  ],
+  "child_slots": [
+    {
+      "slot_id": "sxetika",
+      "label": "Σχετικά",
+      "allowed_template_ids": ["tpl_parapomp"],
+      "allowed_folders": [],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "<h1>ΕΓΚΥΚΛΙΟΣ{% if ar_protokolloy %} αρ. {{ ar_protokolloy }}{% endif %}</h1>{% if ada %}<p><strong>ΑΔΑ:</strong> {{ ada }}</p>{% endif %}{% if thema %}<h2>{{ thema }}</h2>{% endif %}{% if ekdidon %}<p><strong>Εκδίδων:</strong> {{ ekdidon }}</p>{% endif %}{% if hmerominia %}<p><strong>Ημερομηνία:</strong> {{ hmerominia }}</p>{% endif %}{% if keimeno %}<p>{{ keimeno }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "metadata": {"folder": "keimena", "folder_label": "Κείμενα", "folder_order": 3}
+}

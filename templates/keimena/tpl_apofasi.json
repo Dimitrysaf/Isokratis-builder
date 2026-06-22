@@ -1,0 +1,84 @@
+{
+  "template_id": "tpl_apofasi",
+  "name": "Απόφαση (ΥΑ / ΚΥΑ)",
+  "description": "Υπουργική Απόφαση, Κοινή ΥΑ ή Κανονιστική Απόφαση.",
+  "fields": [
+    {
+      "field_id": "typos",
+      "label": "Τύπος",
+      "field_type": "select",
+      "required": false,
+      "default_value": "ΥΑ",
+      "options": [
+        {"label": "ΥΑ",            "value": "ΥΑ"},
+        {"label": "ΚΥΑ",           "value": "ΚΥΑ"},
+        {"label": "Κανονιστική",   "value": "Κανονιστική"}
+      ],
+      "help_text": ""
+    },
+    {
+      "field_id": "arithmos",
+      "label": "Αριθμός",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. ΔΑΕΦΚ/ΚΕ/Φ.1221/οικ.11993"
+    },
+    {
+      "field_id": "thema",
+      "label": "Θέμα",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "ekdidontes",
+      "label": "Εκδίδοντες (φορέας/φορείς)",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "Για ΚΥΑ: όλοι οι συνυπογράφοντες φορείς"
+    },
+    {
+      "field_id": "fek",
+      "label": "ΦΕΚ",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. ΦΕΚ Β΄ 4521/12.10.2023"
+    }
+  ],
+  "child_slots": [
+    {
+      "slot_id": "nomiki_vasi",
+      "label": "Νομική βάση",
+      "allowed_template_ids": ["tpl_parapomp"],
+      "allowed_folders": [],
+      "min_count": 0,
+      "max_count": 0
+    },
+    {
+      "slot_id": "ypografones",
+      "label": "Υπογράφοντες",
+      "allowed_template_ids": ["tpl_prosopo"],
+      "allowed_folders": [],
+      "min_count": 0,
+      "max_count": 0
+    },
+    {
+      "slot_id": "periexomeno",
+      "label": "Άρθρα",
+      "allowed_template_ids": ["tpl_arthro"],
+      "allowed_folders": [],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "<h1>{{ typos }}{% if arithmos %} {{ arithmos }}{% endif %}</h1>{% if thema %}<h2>{{ thema }}</h2>{% endif %}{% if ekdidontes %}<p><strong>Εκδίδοντες:</strong> {{ ekdidontes }}</p>{% endif %}{% if fek %}<p><strong>ΦΕΚ:</strong> {{ fek }}</p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "metadata": {"folder": "keimena", "folder_label": "Κείμενα", "folder_order": 3}
+}

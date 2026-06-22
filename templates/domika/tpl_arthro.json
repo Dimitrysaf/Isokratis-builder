@@ -1,0 +1,60 @@
+{
+  "template_id": "tpl_arthro",
+  "name": "Άρθρο",
+  "description": "Βασική νομοθετική μονάδα.",
+  "fields": [
+    {
+      "field_id": "arithmos",
+      "label": "Αριθμός",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. 5, 5Α, 12"
+    },
+    {
+      "field_id": "titlos",
+      "label": "Τίτλος (προαιρετικό)",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "katastasi",
+      "label": "Κατάσταση",
+      "field_type": "select",
+      "required": false,
+      "default_value": "Ισχύον",
+      "options": [
+        {"label": "Ισχύον",          "value": "Ισχύον"},
+        {"label": "Καταργηθέν",      "value": "Καταργηθέν"},
+        {"label": "Αντικατασταθέν",  "value": "Αντικατασταθέν"},
+        {"label": "Προστεθέν",       "value": "Προστεθέν"}
+      ],
+      "help_text": ""
+    },
+    {
+      "field_id": "me_vasi",
+      "label": "Με βάση (αν καταργήθηκε/αντικαταστάθηκε)",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "Αναφορά στη νομική βάση κατάργησης/αντικατάστασης"
+    }
+  ],
+  "child_slots": [
+    {
+      "slot_id": "periexomeno",
+      "label": "Παράγραφοι",
+      "allowed_template_ids": ["tpl_paragrafos"],
+      "allowed_folders": [],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "<h3>Άρθρο {{ arithmos }}{% if titlos %} — {{ titlos }}{% endif %}</h3>{% if katastasi and katastasi != 'Ισχύον' %}<p><em>[ {{ katastasi }}{% if me_vasi %} — {{ me_vasi }}{% endif %} ]</em></p>{% endif %}{% for c in children %}{{ c }}{% endfor %}",
+  "metadata": {"folder": "domika", "folder_label": "Δομικά", "folder_order": 1}
+}

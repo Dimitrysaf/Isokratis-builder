@@ -1,0 +1,37 @@
+{
+  "template_id": "tpl_meros",
+  "name": "Μέρος",
+  "description": "Ανώτατη δομική ενότητα (Μέρος Α΄, Β΄…).",
+  "fields": [
+    {
+      "field_id": "arithmos",
+      "label": "Αριθμός",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. Α΄, Β΄, Γ΄"
+    },
+    {
+      "field_id": "titlos",
+      "label": "Τίτλος",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    }
+  ],
+  "child_slots": [
+    {
+      "slot_id": "periexomeno",
+      "label": "Περιεχόμενο",
+      "allowed_template_ids": ["tpl_kefalaio", "tpl_arthro"],
+      "allowed_folders": [],
+      "min_count": 0,
+      "max_count": 0
+    }
+  ],
+  "render_template": "<h1>ΜΕΡΟΣ {{ arithmos }}{% if titlos %} — {{ titlos | upper }}{% endif %}</h1>{% for c in children %}{{ c }}{% endfor %}",
+  "metadata": {"folder": "domika", "folder_label": "Δομικά", "folder_order": 1}
+}

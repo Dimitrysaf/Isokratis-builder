@@ -1,0 +1,37 @@
+{
+  "template_id": "tpl_prosopo",
+  "name": "Πρόσωπο (υπογράφων)",
+  "description": "Φυσικό πρόσωπο που υπογράφει ή εκπροσωπεί φορέα.",
+  "fields": [
+    {
+      "field_id": "onomateponymo",
+      "label": "Ονοματεπώνυμο",
+      "field_type": "text",
+      "required": true,
+      "default_value": "",
+      "options": [],
+      "help_text": ""
+    },
+    {
+      "field_id": "idiothta",
+      "label": "Ιδιότητα",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "π.χ. Γενικός Γραμματέας, Υπουργός"
+    },
+    {
+      "field_id": "foreis",
+      "label": "Φορέας",
+      "field_type": "text",
+      "required": false,
+      "default_value": "",
+      "options": [],
+      "help_text": "Όνομα φορέα / υπηρεσίας"
+    }
+  ],
+  "child_slots": [],
+  "render_template": "<span>{{ onomateponymo }}{% if idiothta %}, {{ idiothta }}{% endif %}{% if foreis %} ({{ foreis }}){% endif %}</span>",
+  "metadata": {"folder": "shared", "folder_label": "Κοινά", "folder_order": 0}
+}
