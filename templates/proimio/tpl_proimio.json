@@ -7,7 +7,7 @@
     {
       "slot_id": "contenuto",
       "label": "Στοιχεία Προοιμίου",
-      "allowed_template_ids": ["tpl_poios", "tpl_syndetikes", "tpl_ti_kanei", "tpl_paragrafos", "tpl_aplo_keimeno"],
+      "allowed_template_ids": ["tpl_poios", "tpl_syndetikes", "tpl_ti_kanei", "tpl_anafora", "tpl_paragrafos", "tpl_aplo_keimeno"],
       "min_count": 0,
       "max_count": 0
     }
