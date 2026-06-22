@@ -349,7 +349,7 @@ def _generate_pdf_bytes(doc, tmpl_dict) -> bytes:
     for tag, text in items:
         if tag == "h1":
             pdf.set_font("DejaVu", "B", 16)
-            pdf.multi_cell(effective_width, 9, text, align="C", new_x="LMARGIN", new_y="NEXT")
+            pdf.multi_cell(effective_width, 9, text, align="L", new_x="LMARGIN", new_y="NEXT")
             # Underline rule
             x, y = pdf.l_margin, pdf.get_y() + 1
             pdf.line(x, y, x + effective_width, y)
@@ -370,7 +370,7 @@ def _generate_pdf_bytes(doc, tmpl_dict) -> bytes:
                            new_x="LMARGIN", new_y="NEXT")
         else:  # p, td, th, blockquote, etc.
             pdf.set_font("DejaVu", "", 11)
-            pdf.multi_cell(effective_width, 5, text, align="J", new_x="LMARGIN", new_y="NEXT")
+            pdf.multi_cell(effective_width, 5, text, align="L", new_x="LMARGIN", new_y="NEXT")
             pdf.ln(1)
 
     return bytes(pdf.output())
@@ -394,10 +394,10 @@ def _build_preview_html(doc, tmpl_dict):
     font-size: 11pt; line-height: 1.45; color: #111;
     margin: 0; padding: 0;
   }}
-  h1 {{ font-size: 15pt; font-weight: bold; margin-bottom: 16pt; text-align: center; border-bottom: 1.5pt solid #000; padding-bottom: 6pt; }}
+  h1 {{ font-size: 15pt; font-weight: bold; margin-bottom: 16pt; text-align: left; border-bottom: 1.5pt solid #000; padding-bottom: 6pt; }}
   h2 {{ font-size: 12.5pt; font-weight: bold; margin: 14pt 0 5pt; }}
   h3 {{ font-size: 11pt; font-weight: bold; margin: 10pt 0 4pt; }}
-  p  {{ margin: 5pt 0; text-align: justify; }}
+  p  {{ margin: 5pt 0; text-align: left; }}
   ul, ol {{ margin: 5pt 0 5pt 18pt; }}
   li {{ margin: 2pt 0; }}
 </style>
