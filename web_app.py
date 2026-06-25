@@ -1,16 +1,15 @@
-"""Flask web interface for Isokratis Legislature Builder."""
+"""Flask web interface for Isokratis Legislature Builder — Akoma Ntoso 3.0."""
 
 import json
 import uuid
 from datetime import datetime
 from pathlib import Path
-from html.parser import HTMLParser
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, Response
 
 from src.db import create_schema, DocumentRepository, TemplateRepository, VersionRepository
 from src.models import Document, Node, Template, TemplateField, TemplateChildSlot
-from src.renderers import HTMLRenderer, LaTeXRenderer, LegalXMLRenderer
+from src.renderers import AkomaNtosoRenderer
 
 app = Flask(__name__, template_folder="templates_web")
 
@@ -37,7 +36,6 @@ def _sync_templates():
             file_ids.add(template.template_id)
         except Exception as e:
             print(f"Warning: could not load template {path.name}: {e}")
-    # Remove DB templates whose JSON files no longer exist
     for tpl in template_repo.load_all_templates():
         if tpl.template_id not in file_ids:
             template_repo.delete_template(tpl.template_id)
@@ -51,9 +49,7 @@ def _get_templates_dict():
 _sync_templates()
 
 
-# ──────────────────────────────────────────────────────────────
-# Document list
-# ──────────────────────────────────────────────────────────────
+# ── Document list ──────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -61,9 +57,7 @@ def index():
     return render_template("index.html", docs=docs)
 
 
-# ──────────────────────────────────────────────────────────────
-# New document
-# ──────────────────────────────────────────────────────────────
+# ── New document ───────────────────────────────────────────────────────────
 
 @app.route("/documents/new", methods=["GET", "POST"])
 def new_document():
@@ -75,9 +69,7 @@ def new_document():
     return render_template("new_document.html")
 
 
-# ──────────────────────────────────────────────────────────────
-# Edit document
-# ──────────────────────────────────────────────────────────────
+# ── Edit document ──────────────────────────────────────────────────────────
 
 @app.route("/documents/<doc_id>")
 def edit_document(doc_id):
@@ -98,9 +90,7 @@ def edit_document(doc_id):
     )
 
 
-# ──────────────────────────────────────────────────────────────
-# Save document (AJAX)
-# ──────────────────────────────────────────────────────────────
+# ── Save document (AJAX) ───────────────────────────────────────────────────
 
 @app.route("/api/documents/<doc_id>/save", methods=["POST"])
 def save_document(doc_id):
@@ -117,9 +107,7 @@ def save_document(doc_id):
         return jsonify({"error": str(e)}), 500
 
 
-# ──────────────────────────────────────────────────────────────
-# Delete document
-# ──────────────────────────────────────────────────────────────
+# ── Delete document ────────────────────────────────────────────────────────
 
 @app.route("/documents/<doc_id>/delete", methods=["POST"])
 def delete_document(doc_id):
@@ -127,9 +115,7 @@ def delete_document(doc_id):
     return redirect(url_for("index"))
 
 
-# ──────────────────────────────────────────────────────────────
-# Save version (AJAX)
-# ──────────────────────────────────────────────────────────────
+# ── Save version (AJAX) ────────────────────────────────────────────────────
 
 @app.route("/api/documents/<doc_id>/version", methods=["POST"])
 def save_version(doc_id):
@@ -143,8 +129,7 @@ def save_version(doc_id):
     return jsonify({"ok": True, "version_id": version_id, "versions": versions})
 
 
-# List versions (AJAX)
-# ──────────────────────────────────────────────────────────────
+# ── List versions (AJAX) ───────────────────────────────────────────────────
 
 @app.route("/api/documents/<doc_id>/versions", methods=["GET"])
 def list_versions(doc_id):
@@ -152,9 +137,7 @@ def list_versions(doc_id):
     return jsonify({"versions": versions})
 
 
-# ──────────────────────────────────────────────────────────────
-# Restore version
-# ──────────────────────────────────────────────────────────────
+# ── Restore version ────────────────────────────────────────────────────────
 
 @app.route("/api/documents/<doc_id>/restore/<version_id>", methods=["POST"])
 def restore_version(doc_id, version_id):
@@ -167,51 +150,41 @@ def restore_version(doc_id, version_id):
     return jsonify({"ok": True, "doc": restored.to_dict()})
 
 
-# ──────────────────────────────────────────────────────────────
-# Export routes
-# ──────────────────────────────────────────────────────────────
+# ── Export: Akoma Ntoso XML ────────────────────────────────────────────────
 
-@app.route("/documents/<doc_id>/export/html")
-def export_html(doc_id):
+@app.route("/documents/<doc_id>/export/akn")
+def export_akn(doc_id):
     doc = doc_repo.load_document(doc_id)
     if not doc:
         return "Document not found", 404
-    renderer = HTMLRenderer(_get_templates_dict())
-    html = renderer.render(doc)
-    return Response(html, mimetype="text/html")
-
-
-@app.route("/documents/<doc_id>/export/latex")
-def export_latex(doc_id):
-    doc = doc_repo.load_document(doc_id)
-    if not doc:
-        return "Document not found", 404
-    renderer = LaTeXRenderer(_get_templates_dict())
-    latex = renderer.render(doc)
-    return Response(
-        latex,
-        mimetype="text/plain",
-        headers={"Content-Disposition": f"attachment; filename={doc_id}.tex"},
-    )
-
-
-@app.route("/documents/<doc_id>/export/xml")
-def export_xml(doc_id):
-    doc = doc_repo.load_document(doc_id)
-    if not doc:
-        return "Document not found", 404
-    renderer = LegalXMLRenderer(_get_templates_dict())
+    renderer = AkomaNtosoRenderer(_get_templates_dict())
     xml = renderer.render(doc)
     return Response(
         xml,
         mimetype="application/xml",
-        headers={"Content-Disposition": f"attachment; filename={doc_id}.xml"},
+        headers={"Content-Disposition": f"attachment; filename={doc_id}.akn.xml"},
     )
 
 
-# ──────────────────────────────────────────────────────────────
-# Templates API
-# ──────────────────────────────────────────────────────────────
+# ── Live preview: Akoma Ntoso XML (AJAX) ──────────────────────────────────
+
+@app.route("/api/preview/akn", methods=["POST"])
+def live_preview_akn():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data"}), 400
+    try:
+        doc = Document.from_dict(data)
+        renderer = AkomaNtosoRenderer(_get_templates_dict())
+        xml = renderer.render(doc)
+        return jsonify({"xml": xml})
+    except Exception as e:
+        import traceback
+        print(f"AKN preview error: {traceback.format_exc()}")
+        return jsonify({"error": str(e)}), 500
+
+
+# ── Templates API ──────────────────────────────────────────────────────────
 
 @app.route("/api/templates")
 def list_templates():
@@ -269,183 +242,6 @@ def edit_template(template_id):
 def delete_template(template_id):
     template_repo.delete_template(template_id)
     return redirect(url_for("templates_page"))
-
-
-# ──────────────────────────────────────────────────────────────
-# Live preview (renders doc JSON → styled HTML)
-# ──────────────────────────────────────────────────────────────
-
-# ── PDF generation helpers ─────────────────────────────────
-
-_DEJAVU      = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"
-_DEJAVU_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"
-
-_HEADING_TAGS   = {"h1", "h2", "h3", "h4", "h5", "h6"}
-_BLOCK_TAGS     = _HEADING_TAGS | {"p", "li", "blockquote", "pre", "td", "th"}
-
-
-class _HTMLExtractor(HTMLParser):
-    """Walk rendered HTML and emit a flat list of (tag, text) pairs."""
-
-    def __init__(self):
-        super().__init__()
-        self.items: list[tuple[str, str]] = []
-        self._tag: str | None = None
-        self._buf: list[str] = []
-        self._depth = 0
-
-    def handle_starttag(self, tag, attrs):
-        if tag in _BLOCK_TAGS and self._tag is None:
-            self._tag = tag
-            self._buf = []
-            self._depth = 1
-        elif self._tag is not None:
-            self._depth += 1
-
-    def handle_endtag(self, tag):
-        if self._tag is None:
-            return
-        if tag == self._tag:
-            self._depth -= 1
-            if self._depth <= 0:
-                text = " ".join("".join(self._buf).split()).strip()
-                if text:
-                    self.items.append((self._tag, text))
-                self._tag = None
-                self._buf = []
-        else:
-            self._depth -= 1
-
-    def handle_data(self, data):
-        if self._tag is not None:
-            self._buf.append(data)
-
-
-def _generate_pdf_bytes(doc, tmpl_dict) -> bytes:
-    """Render doc → HTML → parse → fpdf2 PDF bytes (no system C libs required)."""
-    from fpdf import FPDF
-
-    renderer = HTMLRenderer(tmpl_dict)
-    # Seed root context with doc.title as fallback if not already in root.data
-    if 'title' not in doc.root.data:
-        doc.root.data['title'] = doc.title
-    html_body = renderer.render_node(doc.root)
-    full_html = html_body  # root renders nothing itself; children carry all content
-
-    extractor = _HTMLExtractor()
-    extractor.feed(full_html)
-    items = extractor.items
-
-    pdf = FPDF(orientation="P", unit="mm", format="A4")
-    pdf.set_margins(left=20, top=25, right=20)
-    pdf.set_auto_page_break(auto=True, margin=20)
-
-    pdf.add_font("DejaVu", "",  _DEJAVU)
-    pdf.add_font("DejaVu", "B", _DEJAVU_BOLD)
-
-    pdf.add_page()
-    effective_width = pdf.w - pdf.l_margin - pdf.r_margin  # 170 mm on A4
-
-    for tag, text in items:
-        if tag == "h1":
-            pdf.set_font("DejaVu", "B", 16)
-            pdf.multi_cell(effective_width, 9, text, align="L", new_x="LMARGIN", new_y="NEXT")
-            # Underline rule
-            x, y = pdf.l_margin, pdf.get_y() + 1
-            pdf.line(x, y, x + effective_width, y)
-            pdf.ln(5)
-        elif tag == "h2":
-            pdf.ln(4)
-            pdf.set_font("DejaVu", "B", 13)
-            pdf.multi_cell(effective_width, 8, text, align="L", new_x="LMARGIN", new_y="NEXT")
-            pdf.ln(2)
-        elif tag == "h3":
-            pdf.ln(3)
-            pdf.set_font("DejaVu", "B", 11.5)
-            pdf.multi_cell(effective_width, 7, text, align="L", new_x="LMARGIN", new_y="NEXT")
-            pdf.ln(1)
-        elif tag == "li":
-            pdf.set_font("DejaVu", "", 11)
-            pdf.multi_cell(effective_width - 5, 5, f"\u2022  {text}", align="L",
-                           new_x="LMARGIN", new_y="NEXT")
-        else:  # p, td, th, blockquote, etc.
-            pdf.set_font("DejaVu", "", 11)
-            pdf.multi_cell(effective_width, 5, text, align="L", new_x="LMARGIN", new_y="NEXT")
-            pdf.ln(1)
-
-    return bytes(pdf.output())
-
-
-def _build_preview_html(doc, tmpl_dict):
-    """Build an HTML preview string (used for the HTML fallback endpoint)."""
-    renderer = HTMLRenderer(tmpl_dict)
-    if 'title' not in doc.root.data:
-        doc.root.data['title'] = doc.title
-    body = renderer.render_node(doc.root)
-    empty = '<p style="text-align:center;color:#aaa;margin-top:60pt;font-style:italic;">Document is empty — add nodes to see content here.</p>'
-    return f"""<!DOCTYPE html>
-<html lang="el">
-<head>
-<meta charset="UTF-8">
-<style>
-  @page {{ size: A4; margin: 25mm 20mm; }}
-  body {{
-    font-family: "Georgia", "Times New Roman", serif;
-    font-size: 11pt; line-height: 1.45; color: #111;
-    margin: 0; padding: 0;
-  }}
-  h1 {{ font-size: 15pt; font-weight: bold; margin-bottom: 16pt; text-align: left; border-bottom: 1.5pt solid #000; padding-bottom: 6pt; }}
-  h2 {{ font-size: 12.5pt; font-weight: bold; margin: 14pt 0 5pt; }}
-  h3 {{ font-size: 11pt; font-weight: bold; margin: 10pt 0 4pt; }}
-  p  {{ margin: 5pt 0; text-align: left; }}
-  ul, ol {{ margin: 5pt 0 5pt 18pt; }}
-  li {{ margin: 2pt 0; }}
-</style>
-</head>
-<body>
-{body if body.strip() else empty}
-</body>
-</html>"""
-
-
-@app.route("/api/preview/pdf", methods=["POST"])
-def live_preview_pdf():
-    """Generate a real binary PDF from posted doc JSON (application/pdf)."""
-    data = request.get_json()
-    if not data:
-        return Response(b"", status=400)
-    try:
-        doc = Document.from_dict(data)
-        tmpl_dict = _get_templates_dict()
-        pdf_bytes = _generate_pdf_bytes(doc, tmpl_dict)
-        return Response(
-            pdf_bytes,
-            mimetype="application/pdf",
-            headers={"Content-Disposition": "inline; filename=preview.pdf"},
-        )
-    except Exception as e:
-        import traceback
-        print(f"PDF preview error: {traceback.format_exc()}")
-        return Response(json.dumps({"error": str(e)}), status=500, mimetype="application/json")
-
-
-@app.route("/api/preview", methods=["POST"])
-def live_preview():
-    """HTML preview (kept for fallback)."""
-    data = request.get_json()
-    if not data:
-        return Response("<p>No data</p>", mimetype="text/html")
-    try:
-        doc = Document.from_dict(data)
-        tmpl_dict = _get_templates_dict()
-        html = _build_preview_html(doc, tmpl_dict)
-        return Response(html, mimetype="text/html")
-    except Exception as e:
-        return Response(f"<pre style='color:red;padding:20px'>Preview error: {e}</pre>", mimetype="text/html")
-
-
-def _esc(s):
-    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 if __name__ == "__main__":

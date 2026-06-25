@@ -1,15 +1,9 @@
-"""Renderers module."""
+"""Renderers module — Akoma Ntoso 3.0 only."""
 
 from .base import BaseRenderer
-from .html_renderer import HTMLRenderer
-from .pdf_renderer import PDFRenderer
-from .latex_renderer import LaTeXRenderer
-from .xml_renderer import LegalXMLRenderer
+from .xml_renderer import AkomaNtosoRenderer
 
 __all__ = [
     "BaseRenderer",
-    "HTMLRenderer",
-    "PDFRenderer",
-    "LaTeXRenderer",
-    "LegalXMLRenderer",
+    "AkomaNtosoRenderer",
 ]
