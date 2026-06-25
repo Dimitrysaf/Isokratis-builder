@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Minimal W3C XML-namespace schema bundled locally so the AKN schema can
+  xs:import it without a network round-trip.
+  Equivalent to https://www.w3.org/2001/xml.xsd (CC BY 3.0)
+-->
+<xs:schema
+  targetNamespace="http://www.w3.org/XML/1998/namespace"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- xml:lang — BCP 47 language tag -->
+  <xs:attribute name="lang" type="xs:language"/>
+
+  <!-- xml:space — whitespace handling -->
+  <xs:attribute name="space">
+    <xs:simpleType>
+      <xs:restriction base="xs:NCName">
+        <xs:enumeration value="default"/>
+        <xs:enumeration value="preserve"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+
+  <!-- xml:base — base URI -->
+  <xs:attribute name="base" type="xs:anyURI"/>
+
+  <!-- xml:id — unique ID within document -->
+  <xs:attribute name="id" type="xs:ID"/>
+
+  <!-- Convenience group used by importing schemas -->
+  <xs:attributeGroup name="specialAttrs">
+    <xs:attribute ref="xml:base"/>
+    <xs:attribute ref="xml:lang"/>
+    <xs:attribute ref="xml:space"/>
+    <xs:attribute ref="xml:id"/>
+  </xs:attributeGroup>
+
+</xs:schema>
