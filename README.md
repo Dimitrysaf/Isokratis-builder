@@ -1,341 +1,136 @@
-# Isokratis - Legislature Builder
+# Isokratis — Legislature Builder
 
-A modular, template-driven document editor for Greek legislature documents (laws, gazettes, regulations) with support for nested templates, cross-references, and multiple export formats.
+Web application for authoring Greek legislative documents in **Akoma Ntoso 3.0** XML (OASIS LegalDocML standard).
 
 ## Features
 
-- **Modular Templates**: Define templates with form fields and rendering rules (no hardcoding).
-- **Nested Templates**: Templates can contain other templates; parameters are filled as forms.
-- **Node-based AST**: Generic, tree-based document structure.
-- **Cross-References**: Mention and reference other nodes (articles, paragraphs, etc.); resolve and track backlinks.
-- **Multiple Export Formats**: HTML, PDF, LaTeX, custom Legal XML.
-- **SQLite Storage**: Persistent storage with FTS5 search.
-- **Qt/PySide6 UI**: Native desktop application on Linux and Windows.
+| Area | Details |
+|------|---------|
+| **Instrument types** | Νόμος, Προεδρικό Διάταγμα, ΠΝΠ, Υπουργική Απόφαση, Εγκύκλιος, Κωδικοποίηση |
+| **AKN structure** | `act`/`doc` · full meta block · preface · preamble · body/mainBody · conclusions |
+| **Hierarchy** | part · chapter · section · article · paragraph · subparagraph · list · point · indent · hcontainer |
+| **Inline refs** | `{{href\|label}}` in content → `<ref href="…">label</ref>` |
+| **Amendments** | Structured `textualMod` records → `<analysis><passiveModifications>` |
+| **Schema** | Validated against local AKN 3.0 XSD (`schema/akomantoso30.xsd`) |
+| **Storage** | SQLite at `~/.isokratis/documents.db` with version history |
+| **Editor** | LEOS-style: outline panel / document canvas / properties panel |
+
+## Quick Start
+
+```bash
+pip install -r requirements.txt
+python web_app.py          # dev server on port 5000
+```
+
+Then open http://localhost:5000
+
+## Validation & Testing
+
+```bash
+# Generate a conformant sample document
+python make_sample.py
+
+# Validate any AKN file against the local XSD
+python validate.py sample.xml
+
+# Full renderer test suite (5 tests)
+python tests/test_renderer.py
+```
 
 ## Project Structure
 
 ```
-Isokratis-builder/
+├── web_app.py                     Flask application entry point
+├── make_sample.py                 Build sample.xml for validation smoke-test
+├── validate.py                    CLI XSD validator (lxml)
+├── schema/
+│   └── akomantoso30.xsd           AKN 3.0 profile schema (written from spec)
 ├── src/
-│   ├── models/           # Core data models (Node, Template, Document, Reference)
-│   ├── db/              # Database schema and persistence layer
-│   ├── renderers/       # Output renderers (HTML, PDF, LaTeX, XML)
-│   ├── managers/        # Business logic (ReferenceManager, etc.)
-│   └── ui/              # Qt/PySide6 user interface
-├── templates/           # Default template definitions (JSON)
-├── venv/               # Python virtual environment
-├── app.py              # Application entry point
-├── demo_init.py        # Demo: load templates and create sample document
-├── test_suite.py       # Comprehensive test suite
-├── requirements.txt    # Python dependencies
-└── README.md           # This file
+│   ├── models/
+│   │   ├── document.py            Document dataclass + INSTRUMENT_TYPES + AKN_TYPES
+│   │   └── __init__.py
+│   ├── renderers/
+│   │   ├── xml_renderer.py        lxml-based AKN 3.0 renderer (Phase C1)
+│   │   ├── base.py                BaseRenderer ABC
+│   │   └── __init__.py
+│   └── db/
+│       ├── schema.py              SQLite schema creation
+│       ├── persistence.py         DocumentRepository / VersionRepository
+│       └── __init__.py
+├── templates_web/
+│   ├── base.html
+│   ├── index.html
+│   ├── new_document.html
+│   └── edit_document.html         LEOS-style 3-panel editor
+├── tests/
+│   ├── test_renderer.py           Integration tests (nomos, egkykl, amendments, edge cases, golden)
+│   └── golden/
+│       └── nomos_min.akn.xml      Regression golden file
+└── requirements.txt               flask, gunicorn, Jinja2, lxml>=5.0
 ```
 
-## Installation
+## Inline References (D1)
 
-### Prerequisites
+In any content / intro / wrapUp field use the markup:
 
-- Python 3.9+
-- Linux (tested on Linux Mint) or Windows
-- System libraries (on Linux): `libxcb-cursor0`, `libxcb-xinerama0`, `libxcb-shape0`
-
-### Setup (Step-by-Step)
-
-1. **Clone/navigate to the repository:**
-   ```bash
-   cd /home/dimitrys/Dev/Isokratis-builder
-   ```
-
-2. **Create a Python virtual environment:**
-   ```bash
-   python3 -m venv venv
-   ```
-
-3. **Activate the virtual environment:**
-   ```bash
-   # On Linux/macOS:
-   source venv/bin/activate
-   
-   # On Windows:
-   venv\Scripts\activate
-   ```
-
-4. **Install system libraries (Linux only):**
-   ```bash
-   sudo apt-get install -y libxcb-cursor0 libxcb-xinerama0 libxcb-shape0
-   ```
-
-5. **Install Python dependencies:**
-   ```bash
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   ```
-
-## Running the Application
-
-### Launch the GUI
-```bash
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-python app.py
+```
+Βλ. {{/gr/act/2020/4782/ell@/art_5|Ν. 4782/2020 άρθρο 5}} για λεπτομέρειες.
 ```
 
-This opens the Isokratis main window where you can:
-- Create and edit documents
-- View the document tree structure on the left
-- Edit template parameters in the right panel
-- Add/delete nodes
-- Export to multiple formats
+The renderer converts this to:
 
-### Initialize Demo Data
-```bash
-source venv/bin/activate
-python demo_init.py
+```xml
+<p>Βλ. <ref href="/gr/act/2020/4782/ell@/art_5">Ν. 4782/2020 άρθρο 5</ref> για λεπτομέρειες.</p>
 ```
 
-This:
-- Creates the SQLite database in `~/.isokratis/documents.db`
-- Loads 5 default templates (Article, Paragraph, Sub-paragraph, Header, Signature)
-- Creates a sample law document with 2 articles
-- Exports samples to `/tmp/sample.html`, `/tmp/sample.tex`, `/tmp/sample.xml`
+## Amendments (D2)
 
-### Run Tests
-```bash
-source venv/bin/activate
-python test_suite.py
+In the editor, click **Τροποποιήσεις** in the outline to add `textualMod` records.  
+Each record becomes:
+
+```xml
+<analysis source="#isokratis">
+  <passiveModifications>
+    <textualMod eId="mod_1" type="substitution">
+      <source><ref href="…">Ν. 3000/2020 άρ. 1</ref></source>
+      <destination><ref href="…">Ν. 1234/2025 άρ. 1 παρ. 1</ref></destination>
+      <old>Παλαιό κείμενο.</old>
+      <new>Νέο κείμενο.</new>
+    </textualMod>
+  </passiveModifications>
+</analysis>
 ```
 
-Tests verify:
-- ✓ Node creation and tree manipulation
-- ✓ Template definition and serialization
-- ✓ Document creation and persistence
-- ✓ Reference (cross-reference) system
-- ✓ Database persistence (SQLite)
-- ✓ HTML, LaTeX, XML renderers
-- ✓ ReferenceManager (backlinks, validation)
+## Meta Element Ordering (AKN 3.0 §5.2)
 
-## Usage Guide
+The renderer follows the normative sequence:
 
-### Creating a Document
-
-1. **File → New Document**
-2. The document tree shows structure on the left
-3. Select a node to view/edit its parameters on the right
-4. Click "Add Child Node" to insert content
-5. Click "Save Document" to persist changes
-
-### Using Templates
-
-Templates are JSON files in the `templates/` directory. Example:
-
-```json
-{
-  "template_id": "article",
-  "name": "Άρθρο (Article)",
-  "description": "A law article with number and paragraphs",
-  "fields": [
-    {
-      "field_id": "article_number",
-      "label": "Article Number",
-      "field_type": "number",
-      "required": true,
-      "default_value": 1
-    }
-  ],
-  "child_slots": [
-    {
-      "slot_id": "paragraphs",
-      "label": "Paragraphs",
-      "allowed_template_ids": ["paragraph"],
-      "min_count": 1,
-      "max_count": 0
-    }
-  ],
-  "render_template": "<h2>Άρθρο {{ article_number }}</h2>{% for child in children %}{{ child }}{% endfor %}"
-}
+```
+identification → publication* → classification* → lifecycle* → analysis* → references*
 ```
 
-### Cross-References
+## AKN Type Mapping (C3 Decision)
 
-The ReferenceManager handles mentions and cross-references:
-- Create references between nodes
-- Auto-generate display text (e.g., "Article 1", "Paragraph 2")
-- Validate references (find broken links)
-- Track backlinks (find all references pointing to a node)
+| Greek term | AKN element | eId prefix |
+|-----------|-------------|------------|
+| εδάφιο | `<subparagraph>` | `subpara` |
+| περίπτωση | `<list>/<point>` | `list`/`pnt` |
+| υποπερίπτωση | `<indent>` | `indent` |
 
-### Exporting Documents
+## API Endpoints
 
-**Menu: Export**
-- **Export as HTML**: Opens in browser, includes CSS styling
-- **Export as PDF**: Requires WeasyPrint (or wkhtmltopdf)
-- **Export as LaTeX**: For academic/publishing workflows
-- **Export as Legal XML**: Custom Greek legal structure
-
-## Architecture
-
-### Core Models (`src/models/`)
-
-**Node**: Generic tree node
-```python
-Node(
-    node_id: str,
-    node_type: str,  # "document", "article", "paragraph", or custom
-    template_id: Optional[str],  # if set, this is a template instance
-    data: Dict[str, Any],  # form parameters (article_number, content, etc.)
-    children: List[Node],
-    metadata: Dict[str, Any]
-)
-```
-
-**Template**: Template definition (data-driven, no hardcoding)
-```python
-Template(
-    template_id: str,
-    name: str,
-    fields: List[TemplateField],  # form inputs
-    child_slots: List[TemplateChildSlot],  # where to nest templates
-    render_template: str  # Jinja2 template for output
-)
-```
-
-**Document**: Container for a legislature document
-```python
-Document(
-    doc_id: str,
-    title: str,
-    root: Node,  # root AST node
-    metadata: Dict[str, Any]
-)
-```
-
-### Database (`src/db/`)
-
-- **schema.py**: SQLite schema definition
-- **persistence.py**: Repositories for CRUD operations
-  - `DocumentRepository`: save/load documents
-  - `TemplateRepository`: manage templates
-  - `ReferenceRepository`: track cross-references
-
-### Renderers (`src/renderers/`)
-
-All inherit from `BaseRenderer`:
-- **HTMLRenderer**: renders to HTML (with CSS)
-- **PDFRenderer**: renders to PDF (WeasyPrint)
-- **LaTeXRenderer**: renders to LaTeX
-- **LegalXMLRenderer**: renders to custom Greek legal XML
-
-Each renderer walks the AST and uses the template's Jinja2 render string.
-
-### UI (`src/ui/`)
-
-**MainWindow**: Qt/PySide6 window with:
-- **Left panel**: Document tree (interactive, double-click to edit)
-- **Right panel**: Form editor (fields from selected template)
-- **Menu bar**: File (New, Open, Save), Export, Templates
-
-### Managers (`src/managers/`)
-
-**ReferenceManager**: Cross-reference system
-- `create_reference()`: create a reference from one node to another
-- `resolve_reference()`: find the target node
-- `validate_references()`: check for broken links
-- `get_backlinks()`: find all references pointing to a node
-
-## Customization
-
-### Adding a New Template
-
-1. Create a JSON file in `templates/` (e.g., `templates/my_template.json`):
-   ```json
-   {
-     "template_id": "my_tpl",
-     "name": "My Custom Template",
-     "fields": [
-       {"field_id": "field1", "label": "Field 1", "field_type": "text"}
-     ],
-     "render_template": "<div>{{ field1 }}</div>"
-   }
-   ```
-
-2. Restart the app or run `demo_init.py` to load templates
-
-### Extending Export Formats
-
-Subclass `BaseRenderer` and implement `render(doc: Document) -> str`:
-
-```python
-from src.renderers import BaseRenderer
-
-class MyCustomRenderer(BaseRenderer):
-    def render(self, doc: Document) -> str:
-        # Walk doc.root and generate output
-        return self.render_node(doc.root)
-```
-
-### Adding New Field Types
-
-Edit `src/models/template.py` `TemplateFieldType` enum:
-```python
-class TemplateFieldType(str, Enum):
-    TEXT = "text"
-    TEXTAREA = "textarea"
-    MY_CUSTOM = "my_custom"  # <-- add here
-```
-
-## Development Roadmap
-
-- [ ] Template manager UI (create/edit templates without JSON)
-- [ ] Drag/drop reordering in document tree
-- [ ] Embedded web-based rich text editor (Lexical/ProseMirror) for paragraph content
-- [ ] Auto-numbering (articles, paragraphs) with re-numbering
-- [ ] Full-text search across documents
-- [ ] Document history / version control
-- [ ] Collaborative editing (future)
-- [ ] Custom export plugins (WASM)
-
-## Troubleshooting
-
-### Qt Platform Plugin Error
-
-If you see: `Could not load the Qt platform plugin "xcb"`
-
-**Solution (Linux):**
-```bash
-sudo apt-get install libxcb-cursor0 libxcb-xinerama0 libxcb-shape0
-```
-
-### PDF Export Error
-
-If PDF export fails: `TypeError: PDF.__init__()`
-
-**Solution:**
-- WeasyPrint version compatibility issue
-- Use `Export as HTML` and print-to-PDF from your browser as a workaround
-- Or run: `pip install --upgrade weasyprint pydyf`
-
-### Database Lock Error
-
-If you see: `database is locked`
-
-- Close the application
-- Delete `~/.isokratis/documents.db` to start fresh
-- Re-run `python demo_init.py`
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | Document list |
+| GET/POST | `/documents/new` | Create document |
+| GET | `/documents/<id>` | Editor |
+| POST | `/api/documents/<id>/save` | Auto-save (JSON) |
+| POST | `/api/documents/<id>/version` | Save named version |
+| POST | `/api/documents/<id>/restore/<vid>` | Restore version |
+| GET | `/documents/<id>/export/akn` | Download `.akn.xml` |
+| POST | `/api/preview/akn` | Live XML preview |
+| POST | `/documents/<id>/delete` | Delete |
 
 ## License
 
 TBD
-
-## Contributing
-
-Contributions welcome! Please:
-- Follow PEP 8 style guidelines
-- Add docstrings to new classes/functions
-- Test renderers with sample documents
-- Update this README for new features
-
-## Support
-
-For questions or issues, please open an issue on the repository or contact the development team.
-
----
-
-**Status**: Beta (all core features working, UI refinements ongoing)

@@ -1,0 +1,4 @@
+- [AKN 3.0 meta ordering](akn-meta-ordering.md) — classification must precede lifecycle in meta; wrong order is the #1 schema error
+- [AKN body vs mainBody](akn-body-vs-mainbody.md) — act→body, doc→mainBody; egkykl maps to doc so needs mainBody
+- [AKN XSD local only](akn-xsd-local.md) — all OASIS/GitHub URLs return HTML 404; schema lives at schema/akomantoso30.xsd written from spec
+- [Inline refs syntax](akn-inline-refs.md) — {{href|label}} in content fields → <ref href="href">label</ref> via _mixed() in xml_renderer

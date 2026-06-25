@@ -1,0 +1,863 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Akoma Ntoso 3.0 XML Schema — focused profile for Greek legislation
+  Based on OASIS LegalDocML TC Akoma Ntoso 3.0 (CSD13 / OS)
+  Covers: act, doc, full meta block, preface, preamble, body/mainBody,
+          hierarchical elements, conclusions, inline ref.
+  Element ordering follows the normative AKN 3.0 content model.
+-->
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:akn="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+  targetNamespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Common simple types
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:simpleType name="eIdType">
+    <xs:restriction base="xs:token">
+      <xs:pattern value="[a-zA-Z][a-zA-Z0-9_\-]*(__[a-zA-Z][a-zA-Z0-9_\-]*)*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="hrefType">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Inline content types
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Basic inline model: text + ref + marker elements -->
+  <xs:complexType name="inlineType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="akn:ref"/>
+      <xs:element ref="akn:rref"/>
+      <xs:element ref="akn:mref"/>
+      <xs:element ref="akn:b"/>
+      <xs:element ref="akn:i"/>
+      <xs:element ref="akn:u"/>
+      <xs:element ref="akn:sup"/>
+      <xs:element ref="akn:sub"/>
+      <xs:element ref="akn:span"/>
+      <xs:element ref="akn:ins"/>
+      <xs:element ref="akn:del"/>
+      <xs:element ref="akn:docType"/>
+      <xs:element ref="akn:docNumber"/>
+      <xs:element ref="akn:docTitle"/>
+      <xs:element ref="akn:docDate"/>
+      <xs:element ref="akn:date"/>
+      <xs:element ref="akn:docketNumber"/>
+      <xs:element ref="akn:docPurpose"/>
+      <xs:element ref="akn:docAuthority"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- Paragraph: mixed inline content -->
+  <xs:complexType name="pType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="akn:ref"/>
+      <xs:element ref="akn:rref"/>
+      <xs:element ref="akn:mref"/>
+      <xs:element ref="akn:b"/>
+      <xs:element ref="akn:i"/>
+      <xs:element ref="akn:u"/>
+      <xs:element ref="akn:sup"/>
+      <xs:element ref="akn:sub"/>
+      <xs:element ref="akn:span"/>
+      <xs:element ref="akn:ins"/>
+      <xs:element ref="akn:del"/>
+      <xs:element ref="akn:docType"/>
+      <xs:element ref="akn:docNumber"/>
+      <xs:element ref="akn:docTitle"/>
+      <xs:element ref="akn:docDate"/>
+      <xs:element ref="akn:date"/>
+      <xs:element ref="akn:docketNumber"/>
+      <xs:element ref="akn:docPurpose"/>
+      <xs:element ref="akn:docAuthority"/>
+    </xs:choice>
+    <xs:anyAttribute processContents="lax"/>
+  </xs:complexType>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Inline elements
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:element name="ref">
+    <xs:complexType mixed="true">
+      <xs:attribute name="href" type="akn:hrefType" use="required"/>
+      <xs:attribute name="eId" type="akn:eIdType"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="rref">
+    <xs:complexType mixed="true">
+      <xs:attribute name="from" type="akn:hrefType" use="required"/>
+      <xs:attribute name="upTo" type="akn:hrefType" use="required"/>
+      <xs:attribute name="eId" type="akn:eIdType"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="mref">
+    <xs:complexType mixed="true">
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:ref"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="b"   type="akn:inlineType"/>
+  <xs:element name="i"   type="akn:inlineType"/>
+  <xs:element name="u"   type="akn:inlineType"/>
+  <xs:element name="sup" type="akn:inlineType"/>
+  <xs:element name="sub" type="akn:inlineType"/>
+  <xs:element name="span">
+    <xs:complexType mixed="true">
+      <xs:complexContent mixed="true">
+        <xs:extension base="akn:inlineType">
+          <xs:anyAttribute processContents="lax"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ins" type="akn:inlineType"/>
+  <xs:element name="del" type="akn:inlineType"/>
+
+  <!-- Preface inline markers -->
+  <xs:element name="docType"      type="akn:inlineType"/>
+  <xs:element name="docNumber"    type="akn:inlineType"/>
+  <xs:element name="docTitle"     type="akn:inlineType"/>
+  <xs:element name="docDate">
+    <xs:complexType mixed="true">
+      <xs:attribute name="date" type="xs:date"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="date">
+    <xs:complexType mixed="true">
+      <xs:attribute name="date" type="xs:date"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="docketNumber" type="akn:inlineType"/>
+  <xs:element name="docPurpose"   type="akn:inlineType"/>
+  <xs:element name="docAuthority" type="akn:inlineType"/>
+
+  <!-- p element -->
+  <xs:element name="p" type="akn:pType"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Block elements used in preface / conclusions
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Generic block: one or more p -->
+  <xs:complexType name="blockContainerType">
+    <xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element ref="akn:p"/>
+      <xs:element ref="akn:block"/>
+      <xs:element ref="akn:blockContainer"/>
+      <xs:element ref="akn:table"/>
+    </xs:choice>
+    <xs:anyAttribute processContents="lax"/>
+  </xs:complexType>
+
+  <xs:element name="block">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:ref"/>
+        <xs:element ref="akn:b"/>
+        <xs:element ref="akn:i"/>
+      </xs:choice>
+      <xs:attribute name="name" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="blockContainer">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+      </xs:choice>
+      <xs:attribute name="name" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="table">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       num / heading / intro / wrapUp / content / alinea
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:element name="num">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:ref"/>
+        <xs:element ref="akn:b"/>
+        <xs:element ref="akn:i"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="heading">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:ref"/>
+        <xs:element ref="akn:b"/>
+        <xs:element ref="akn:i"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="intro">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="wrapUp">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="content">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+        <xs:element ref="akn:blockContainer"/>
+        <xs:element ref="akn:table"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="alinea">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+      </xs:choice>
+      <xs:attribute name="eId" type="akn:eIdType"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Hierarchical body elements
+       Content model per AKN 3.0 §5.4–5.6:
+         structural: num?, heading?, (intro?, children+, wrapUp?) | content
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Shared attribute group for hierarchical elements -->
+  <xs:attributeGroup name="hierAttrs">
+    <xs:attribute name="eId"   type="akn:eIdType" use="required"/>
+    <xs:attribute name="class" type="xs:string"/>
+    <xs:attribute name="style" type="xs:string"/>
+  </xs:attributeGroup>
+
+  <!-- Content model for a pure hierarchical container (part, chapter, section) -->
+  <xs:complexType name="hierContainerType">
+    <xs:sequence>
+      <xs:element ref="akn:num"     minOccurs="0"/>
+      <xs:element ref="akn:heading" minOccurs="0"/>
+      <xs:choice>
+        <!-- Has explicit children -->
+        <xs:sequence>
+          <xs:element ref="akn:intro" minOccurs="0"/>
+          <xs:choice maxOccurs="unbounded">
+            <xs:element ref="akn:part"/>
+            <xs:element ref="akn:chapter"/>
+            <xs:element ref="akn:section"/>
+            <xs:element ref="akn:article"/>
+            <xs:element ref="akn:hcontainer"/>
+            <xs:element ref="akn:paragraph"/>
+            <xs:element ref="akn:subparagraph"/>
+            <xs:element ref="akn:list"/>
+            <xs:element ref="akn:point"/>
+            <xs:element ref="akn:indent"/>
+            <xs:element ref="akn:alinea"/>
+          </xs:choice>
+          <xs:element ref="akn:wrapUp" minOccurs="0"/>
+        </xs:sequence>
+        <!-- Leaf: only content -->
+        <xs:element ref="akn:content"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="akn:hierAttrs"/>
+  </xs:complexType>
+
+  <!-- hcontainer: same but with @name -->
+  <xs:complexType name="hcontainerType">
+    <xs:sequence>
+      <xs:element ref="akn:num"     minOccurs="0"/>
+      <xs:element ref="akn:heading" minOccurs="0"/>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="akn:intro" minOccurs="0"/>
+          <xs:choice maxOccurs="unbounded">
+            <xs:element ref="akn:part"/>
+            <xs:element ref="akn:chapter"/>
+            <xs:element ref="akn:section"/>
+            <xs:element ref="akn:article"/>
+            <xs:element ref="akn:hcontainer"/>
+            <xs:element ref="akn:paragraph"/>
+            <xs:element ref="akn:subparagraph"/>
+            <xs:element ref="akn:list"/>
+            <xs:element ref="akn:point"/>
+            <xs:element ref="akn:indent"/>
+            <xs:element ref="akn:alinea"/>
+          </xs:choice>
+          <xs:element ref="akn:wrapUp" minOccurs="0"/>
+        </xs:sequence>
+        <xs:element ref="akn:content"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="eId"  type="akn:eIdType" use="required"/>
+    <xs:attribute name="name" type="xs:string"   use="required"/>
+  </xs:complexType>
+
+  <xs:element name="part"         type="akn:hierContainerType"/>
+  <xs:element name="chapter"      type="akn:hierContainerType"/>
+  <xs:element name="section"      type="akn:hierContainerType"/>
+  <xs:element name="article"      type="akn:hierContainerType"/>
+  <xs:element name="paragraph"    type="akn:hierContainerType"/>
+  <xs:element name="subparagraph" type="akn:hierContainerType"/>
+  <xs:element name="list"         type="akn:hierContainerType"/>
+  <xs:element name="point"        type="akn:hierContainerType"/>
+  <xs:element name="indent"       type="akn:hierContainerType"/>
+  <xs:element name="hcontainer"   type="akn:hcontainerType"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       body / mainBody
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:complexType name="bodyType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="akn:part"/>
+      <xs:element ref="akn:chapter"/>
+      <xs:element ref="akn:section"/>
+      <xs:element ref="akn:article"/>
+      <xs:element ref="akn:hcontainer"/>
+      <xs:element ref="akn:paragraph"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:element name="body"     type="akn:bodyType"/>
+  <xs:element name="mainBody" type="akn:bodyType"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       preface
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:element name="preface">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+        <xs:element ref="akn:blockContainer"/>
+        <xs:element ref="akn:table"/>
+        <xs:element ref="akn:docType"/>
+        <xs:element ref="akn:docNumber"/>
+        <xs:element ref="akn:docTitle"/>
+        <xs:element ref="akn:docDate"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       preamble
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:element name="formula">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+      </xs:choice>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="citation">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+      </xs:choice>
+      <xs:attribute name="eId" type="akn:eIdType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="citations">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:citation" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="eId" type="akn:eIdType"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="recital">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+      </xs:choice>
+      <xs:attribute name="eId" type="akn:eIdType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="recitals">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:recital" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="eId" type="akn:eIdType"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="preamble">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:formula"  minOccurs="0"/>
+        <xs:choice minOccurs="0">
+          <xs:element ref="akn:citations"/>
+          <xs:element ref="akn:recitals"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       conclusions
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:element name="signature">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+        <xs:element ref="akn:role"/>
+        <xs:element ref="akn:person"/>
+        <xs:element ref="akn:organization"/>
+        <xs:element ref="akn:date"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="role">         <xs:complexType mixed="true"/></xs:element>
+  <xs:element name="person">       <xs:complexType mixed="true"/></xs:element>
+  <xs:element name="organization"> <xs:complexType mixed="true"/></xs:element>
+
+  <xs:element name="conclusions">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:p"/>
+        <xs:element ref="akn:block"/>
+        <xs:element ref="akn:signature"/>
+        <xs:element ref="akn:date"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       meta block — STRICT ordering per AKN 3.0 §5.2:
+       identification, publication*, classification*, lifecycle*,
+       workflow*, analysis*, temporalData*, notes*, proprietary*,
+       presentation*, references*, amendment*
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- FRBR sub-elements -->
+  <xs:complexType name="frbrDateType">
+    <xs:attribute name="date" type="xs:date"   use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:element name="FRBRthis">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRuri">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRalias">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+      <xs:attribute name="name"  type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRdate"    type="akn:frbrDateType"/>
+  <xs:element name="FRBRauthor">
+    <xs:complexType>
+      <xs:attribute name="href" type="xs:string" use="required"/>
+      <xs:attribute name="as"   type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRcountry">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRnumber">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRname">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRsubtype">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRlanguage">
+    <xs:complexType>
+      <xs:attribute name="language" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRformat">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRprescriptive">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:boolean" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FRBRauthoritative">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:boolean" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- FRBRWork -->
+  <xs:element name="FRBRWork">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:FRBRthis"/>
+        <xs:element ref="akn:FRBRuri"          minOccurs="0"/>
+        <xs:element ref="akn:FRBRalias"        minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRdate"         maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRauthor"       maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRcountry"      minOccurs="0"/>
+        <xs:element ref="akn:FRBRnumber"       minOccurs="0"/>
+        <xs:element ref="akn:FRBRname"         minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRprescriptive" minOccurs="0"/>
+        <xs:element ref="akn:FRBRauthoritative" minOccurs="0"/>
+        <xs:element ref="akn:FRBRsubtype"      minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- FRBRExpression -->
+  <xs:element name="FRBRExpression">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:FRBRthis"/>
+        <xs:element ref="akn:FRBRuri"    minOccurs="0"/>
+        <xs:element ref="akn:FRBRalias" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRdate"  maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRauthor" maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRlanguage"/>
+        <xs:element ref="akn:FRBRformat" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- FRBRManifestation -->
+  <xs:element name="FRBRManifestation">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:FRBRthis"/>
+        <xs:element ref="akn:FRBRuri"    minOccurs="0"/>
+        <xs:element ref="akn:FRBRalias" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRdate"  maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRauthor" maxOccurs="unbounded"/>
+        <xs:element ref="akn:FRBRformat" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- identification -->
+  <xs:element name="identification">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:FRBRWork"/>
+        <xs:element ref="akn:FRBRExpression"/>
+        <xs:element ref="akn:FRBRManifestation"/>
+      </xs:sequence>
+      <xs:attribute name="source" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- publication -->
+  <xs:element name="publication">
+    <xs:complexType>
+      <xs:attribute name="date"   type="xs:date"   use="required"/>
+      <xs:attribute name="name"   type="xs:string" use="required"/>
+      <xs:attribute name="showAs" type="xs:string"/>
+      <xs:attribute name="number" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- classification / keyword -->
+  <xs:element name="keyword">
+    <xs:complexType>
+      <xs:attribute name="eId"        type="akn:eIdType" use="required"/>
+      <xs:attribute name="value"      type="xs:string"   use="required"/>
+      <xs:attribute name="showAs"     type="xs:string"/>
+      <xs:attribute name="dictionary" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="classification">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:keyword" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="source" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- lifecycle / eventRef -->
+  <xs:element name="eventRef">
+    <xs:complexType>
+      <xs:attribute name="date"   type="xs:date"   use="required"/>
+      <xs:attribute name="type"   type="xs:string" use="required"/>
+      <xs:attribute name="source" type="xs:string"/>
+      <xs:attribute name="eId"    type="akn:eIdType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="lifecycle">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:eventRef" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="source" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- references / TLC elements -->
+  <xs:element name="TLCOrganization">
+    <xs:complexType>
+      <xs:attribute name="eId"    type="akn:eIdType" use="required"/>
+      <xs:attribute name="href"   type="xs:string"   use="required"/>
+      <xs:attribute name="showAs" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TLCPerson">
+    <xs:complexType>
+      <xs:attribute name="eId"    type="akn:eIdType" use="required"/>
+      <xs:attribute name="href"   type="xs:string"   use="required"/>
+      <xs:attribute name="showAs" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TLCConcept">
+    <xs:complexType>
+      <xs:attribute name="eId"    type="akn:eIdType" use="required"/>
+      <xs:attribute name="href"   type="xs:string"   use="required"/>
+      <xs:attribute name="showAs" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TLCEvent">
+    <xs:complexType>
+      <xs:attribute name="eId"    type="akn:eIdType" use="required"/>
+      <xs:attribute name="href"   type="xs:string"   use="required"/>
+      <xs:attribute name="showAs" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TLCRole">
+    <xs:complexType>
+      <xs:attribute name="eId"    type="akn:eIdType" use="required"/>
+      <xs:attribute name="href"   type="xs:string"   use="required"/>
+      <xs:attribute name="showAs" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TLCProcess">
+    <xs:complexType>
+      <xs:attribute name="eId"    type="akn:eIdType" use="required"/>
+      <xs:attribute name="href"   type="xs:string"   use="required"/>
+      <xs:attribute name="showAs" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- passiveModifications / textualMod (§5.9 amendments) -->
+  <xs:element name="source">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:ref"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="destination">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:ref"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="old">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:ref"/>
+        <xs:element ref="akn:b"/>
+        <xs:element ref="akn:i"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="new">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:ref"/>
+        <xs:element ref="akn:b"/>
+        <xs:element ref="akn:i"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="textualMod">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:source"/>
+        <xs:element ref="akn:destination"/>
+        <xs:element ref="akn:old" minOccurs="0"/>
+        <xs:element ref="akn:new" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="eId"  type="akn:eIdType" use="required"/>
+      <xs:attribute name="type" type="xs:string"   use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="passiveModifications">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:textualMod" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="activeModifications">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:textualMod" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- analysis element -->
+  <xs:element name="analysis">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:activeModifications"  minOccurs="0"/>
+        <xs:element ref="akn:passiveModifications" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="source" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- references -->
+  <xs:element name="references">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="akn:TLCOrganization"/>
+        <xs:element ref="akn:TLCPerson"/>
+        <xs:element ref="akn:TLCConcept"/>
+        <xs:element ref="akn:TLCEvent"/>
+        <xs:element ref="akn:TLCRole"/>
+        <xs:element ref="akn:TLCProcess"/>
+      </xs:choice>
+      <xs:attribute name="source" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- meta — STRICT child ordering per AKN 3.0 -->
+  <xs:element name="meta">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:identification"/>
+        <xs:element ref="akn:publication"    minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="akn:classification" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="akn:lifecycle"      minOccurs="0" maxOccurs="unbounded"/>
+        <!-- workflow, analysis, temporalData, notes, proprietary, presentation -->
+        <xs:element ref="akn:analysis"       minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="akn:references"     minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Top-level document elements
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:element name="act">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:meta"/>
+        <xs:element ref="akn:preface"     minOccurs="0"/>
+        <xs:element ref="akn:preamble"    minOccurs="0"/>
+        <xs:element ref="akn:body"/>
+        <xs:element ref="akn:conclusions" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="doc">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="akn:meta"/>
+        <xs:element ref="akn:preface"     minOccurs="0"/>
+        <xs:element ref="akn:preamble"    minOccurs="0"/>
+        <xs:element ref="akn:mainBody"/>
+        <xs:element ref="akn:conclusions" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Root element
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+  <xs:element name="akomaNtoso">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="akn:act"/>
+        <xs:element ref="akn:doc"/>
+        <!-- bill, amendment, amendmentList, debate, debateReport,
+             statement, judgment, portion, officialGazette, doc →
+             all map to one of the above for our purposes -->
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
