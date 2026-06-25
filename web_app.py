@@ -145,4 +145,7 @@ def live_preview_akn():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=True)
+    # use_reloader=False: Werkzeug's reloader spawns a second process that
+    # races with the first on every SQLite write, causing "database is locked".
+    # In Replit the workflow is restarted by the agent, so auto-reload is unused.
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
