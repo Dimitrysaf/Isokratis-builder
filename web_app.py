@@ -1,96 +1,69 @@
-"""Flask web interface for Isokratis Legislature Builder — Akoma Ntoso 3.0."""
+"""Isokratis Legislature Builder — Flask web interface (Akoma Ntoso 3.0)."""
 
 import json
-import uuid
 from datetime import datetime
 from pathlib import Path
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, Response
 
-from src.db import create_schema, DocumentRepository, TemplateRepository, VersionRepository
-from src.models import Document, Node, Template, TemplateField, TemplateChildSlot
+from src.db import create_schema, DocumentRepository, VersionRepository
+from src.models import Document, INSTRUMENT_TYPES, AKN_TYPES, BODY_ROOT_CAN_ADD
 from src.renderers import AkomaNtosoRenderer
 
 app = Flask(__name__, template_folder="templates_web")
 
-# Database setup
 DB_PATH = Path.home() / ".isokratis" / "documents.db"
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 create_schema(str(DB_PATH))
 
-doc_repo = DocumentRepository(str(DB_PATH))
-template_repo = TemplateRepository(str(DB_PATH))
+doc_repo     = DocumentRepository(str(DB_PATH))
 version_repo = VersionRepository(str(DB_PATH))
+renderer     = AkomaNtosoRenderer()
 
 
-def _sync_templates():
-    """Load JSON template files into DB; remove any DB entries whose file was deleted."""
-    templates_dir = Path(__file__).parent / "templates"
-    file_ids: set[str] = set()
-    for path in sorted(templates_dir.rglob("*.json")):
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                tpl_data = json.load(f)
-            template = Template.from_dict(tpl_data)
-            template_repo.save_template(template)
-            file_ids.add(template.template_id)
-        except Exception as e:
-            print(f"Warning: could not load template {path.name}: {e}")
-    for tpl in template_repo.load_all_templates():
-        if tpl.template_id not in file_ids:
-            template_repo.delete_template(tpl.template_id)
-
-
-def _get_templates_dict():
-    """Return all templates as a dict keyed by template_id."""
-    return {t.template_id: t for t in template_repo.load_all_templates()}
-
-
-_sync_templates()
-
-
-# ── Document list ──────────────────────────────────────────────────────────
+# ── Document list ─────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
     docs = doc_repo.list_documents()
-    return render_template("index.html", docs=docs)
+    return render_template("index.html", docs=docs, instrument_types=INSTRUMENT_TYPES)
 
 
-# ── New document ───────────────────────────────────────────────────────────
+# ── New document ──────────────────────────────────────────────────────────────
 
 @app.route("/documents/new", methods=["GET", "POST"])
 def new_document():
     if request.method == "POST":
-        title = request.form.get("title", "").strip() or "Untitled Document"
-        doc = Document(title=title)
+        title  = request.form.get("title", "").strip() or "Χωρίς τίτλο"
+        itype  = request.form.get("instrument_type", "nomos")
+        if itype not in INSTRUMENT_TYPES:
+            itype = "nomos"
+        doc = Document(title=title, instrument_type=itype)
         doc_repo.save_document(doc)
         return redirect(url_for("edit_document", doc_id=doc.doc_id))
-    return render_template("new_document.html")
+    return render_template("new_document.html", instrument_types=INSTRUMENT_TYPES)
 
 
-# ── Edit document ──────────────────────────────────────────────────────────
+# ── Edit document ─────────────────────────────────────────────────────────────
 
 @app.route("/documents/<doc_id>")
 def edit_document(doc_id):
-    _sync_templates()
     doc = doc_repo.load_document(doc_id)
     if not doc:
         return "Document not found", 404
-    templates = template_repo.load_all_templates()
     versions = version_repo.list_versions(doc_id)
-    templates_dicts = [t.to_dict() for t in templates]
     return render_template(
         "edit_document.html",
         doc=doc,
-        templates=templates,
-        templates_json=json.dumps(templates_dicts),
-        versions=versions,
         doc_json=json.dumps(doc.to_dict()),
+        versions=versions,
+        instrument_types_json=json.dumps(INSTRUMENT_TYPES),
+        akn_types_json=json.dumps(AKN_TYPES),
+        body_root_can_add_json=json.dumps(BODY_ROOT_CAN_ADD),
     )
 
 
-# ── Save document (AJAX) ───────────────────────────────────────────────────
+# ── Save document (AJAX) ──────────────────────────────────────────────────────
 
 @app.route("/api/documents/<doc_id>/save", methods=["POST"])
 def save_document(doc_id):
@@ -107,7 +80,7 @@ def save_document(doc_id):
         return jsonify({"error": str(e)}), 500
 
 
-# ── Delete document ────────────────────────────────────────────────────────
+# ── Delete document ───────────────────────────────────────────────────────────
 
 @app.route("/documents/<doc_id>/delete", methods=["POST"])
 def delete_document(doc_id):
@@ -115,29 +88,18 @@ def delete_document(doc_id):
     return redirect(url_for("index"))
 
 
-# ── Save version (AJAX) ────────────────────────────────────────────────────
+# ── Versions ──────────────────────────────────────────────────────────────────
 
 @app.route("/api/documents/<doc_id>/version", methods=["POST"])
 def save_version(doc_id):
     data = request.get_json() or {}
-    note = data.get("note", "")
-    doc = doc_repo.load_document(doc_id)
+    doc  = doc_repo.load_document(doc_id)
     if not doc:
         return jsonify({"error": "Not found"}), 404
-    version_id = version_repo.save_version(doc, note=note)
+    vid      = version_repo.save_version(doc, note=data.get("note", ""))
     versions = version_repo.list_versions(doc_id)
-    return jsonify({"ok": True, "version_id": version_id, "versions": versions})
+    return jsonify({"ok": True, "version_id": vid, "versions": versions})
 
-
-# ── List versions (AJAX) ───────────────────────────────────────────────────
-
-@app.route("/api/documents/<doc_id>/versions", methods=["GET"])
-def list_versions(doc_id):
-    versions = version_repo.list_versions(doc_id)
-    return jsonify({"versions": versions})
-
-
-# ── Restore version ────────────────────────────────────────────────────────
 
 @app.route("/api/documents/<doc_id>/restore/<version_id>", methods=["POST"])
 def restore_version(doc_id, version_id):
@@ -150,14 +112,13 @@ def restore_version(doc_id, version_id):
     return jsonify({"ok": True, "doc": restored.to_dict()})
 
 
-# ── Export: Akoma Ntoso XML ────────────────────────────────────────────────
+# ── Export: Akoma Ntoso XML ───────────────────────────────────────────────────
 
 @app.route("/documents/<doc_id>/export/akn")
 def export_akn(doc_id):
     doc = doc_repo.load_document(doc_id)
     if not doc:
         return "Document not found", 404
-    renderer = AkomaNtosoRenderer(_get_templates_dict())
     xml = renderer.render(doc)
     return Response(
         xml,
@@ -166,7 +127,7 @@ def export_akn(doc_id):
     )
 
 
-# ── Live preview: Akoma Ntoso XML (AJAX) ──────────────────────────────────
+# ── Live AKN XML preview (AJAX) ───────────────────────────────────────────────
 
 @app.route("/api/preview/akn", methods=["POST"])
 def live_preview_akn():
@@ -175,73 +136,12 @@ def live_preview_akn():
         return jsonify({"error": "No data"}), 400
     try:
         doc = Document.from_dict(data)
-        renderer = AkomaNtosoRenderer(_get_templates_dict())
         xml = renderer.render(doc)
         return jsonify({"xml": xml})
     except Exception as e:
         import traceback
-        print(f"AKN preview error: {traceback.format_exc()}")
+        print(f"AKN preview error:\n{traceback.format_exc()}")
         return jsonify({"error": str(e)}), 500
-
-
-# ── Templates API ──────────────────────────────────────────────────────────
-
-@app.route("/api/templates")
-def list_templates():
-    templates = template_repo.load_all_templates()
-    return jsonify([t.to_dict() for t in templates])
-
-
-@app.route("/api/templates/<template_id>")
-def get_template(template_id):
-    t = template_repo.load_template(template_id)
-    if not t:
-        return jsonify({"error": "Not found"}), 404
-    return jsonify(t.to_dict())
-
-
-@app.route("/templates")
-def templates_page():
-    templates = template_repo.load_all_templates()
-    return render_template("templates.html", templates=templates)
-
-
-@app.route("/templates/new", methods=["GET", "POST"])
-def new_template():
-    if request.method == "POST":
-        try:
-            data = request.get_json() or request.form.to_dict()
-            if isinstance(data, dict) and "template_id" not in data:
-                data["template_id"] = str(uuid.uuid4())
-            template = Template.from_dict(data)
-            template_repo.save_template(template)
-            return jsonify({"ok": True, "template_id": template.template_id})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    return render_template("template_editor.html", template=None)
-
-
-@app.route("/templates/<template_id>/edit", methods=["GET", "POST"])
-def edit_template(template_id):
-    if request.method == "POST":
-        try:
-            data = request.get_json() or {}
-            data["template_id"] = template_id
-            template = Template.from_dict(data)
-            template_repo.save_template(template)
-            return jsonify({"ok": True})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    t = template_repo.load_template(template_id)
-    if not t:
-        return "Template not found", 404
-    return render_template("template_editor.html", template=t)
-
-
-@app.route("/templates/<template_id>/delete", methods=["POST"])
-def delete_template(template_id):
-    template_repo.delete_template(template_id)
-    return redirect(url_for("templates_page"))
 
 
 if __name__ == "__main__":

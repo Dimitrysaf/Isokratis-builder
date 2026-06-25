@@ -1,237 +1,286 @@
-"""Akoma Ntoso 3.0 renderer for Greek legal documents."""
+"""Akoma Ntoso 3.0 renderer for Greek legislation (§5 mapping reference)."""
 
-import re
-from typing import Dict, Any
-from datetime import date
-from ..models import Document, Node, Template
+from datetime import date as date_cls
+from typing import Any
 from .base import BaseRenderer
+from ..models import Document, INSTRUMENT_TYPES, AKN_TYPES
 
 
-# Map template_id prefixes → AKN element names
-_TPL_TO_AKN = {
-    "tpl_nomos":    "act",
-    "tpl_pd":       "act",
-    "tpl_pnp":      "act",
-    "tpl_apofasi":  "act",
-    "tpl_egkykl":   "doc",
-    "tpl_kodikop":  "act",
-    "tpl_fek":      "act",
-    "tpl_meros":    "part",
-    "tpl_kefalaio": "chapter",
-    "tpl_arthro":   "article",
-    "tpl_paragrafos": "paragraph",
-    "tpl_periptosi":  "point",
-    "tpl_ypopeript":  "indent",
-    "tpl_foreis":   "FRBRauthor",
-    "tpl_prosopo":  "person",
-    "tpl_parapomp": "ref",
+AKN_NS = "http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+
+# AKN eId prefix per element type
+_EID = {
+    "part": "part", "chapter": "chp", "section": "sec",
+    "article": "art", "paragraph": "para", "subparagraph": "subpara",
+    "list": "list", "point": "pnt", "indent": "indent",
+    "hcontainer": "hcontainer",
 }
 
-_DOC_LEVEL_TPLS = {"tpl_nomos", "tpl_pd", "tpl_pnp", "tpl_apofasi", "tpl_egkykl", "tpl_kodikop", "tpl_fek"}
-_BODY_LEVEL_TPLS = {"tpl_meros", "tpl_kefalaio", "tpl_arthro", "tpl_paragrafos", "tpl_periptosi", "tpl_ypopeript"}
+
+def _x(text: str) -> str:
+    """XML-escape a string."""
+    return (str(text)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;"))
 
 
-def _slug(tpl_id: str) -> str:
-    """Return the prefix part of a template id (e.g. tpl_arthro)."""
-    return tpl_id if "_" not in tpl_id else "_".join(tpl_id.split("_")[:2])
-
-
-def _eid(node: Node, position: int = 1) -> str:
-    """Build a simple eId for a node."""
-    tpl = node.template_id or node.node_type
-    prefix = tpl.replace("tpl_", "")
-    num = node.data.get("number", node.data.get("arthro", node.data.get("id", position)))
-    return f"{prefix}_{num}" if num else f"{prefix}_{position}"
+def _ind(depth: int) -> str:
+    return "  " * depth
 
 
 class AkomaNtosoRenderer(BaseRenderer):
-    """Render documents to Akoma Ntoso 3.0 XML."""
+    """Render a Document to Akoma Ntoso 3.0 XML following the Greek legislation mapping."""
 
-    AKN_NS = "http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
-    AKN_EL = "http://docs.oasis-open.org/legaldocml/ns/akn/3.0/AKN"
+    def __init__(self, templates=None):
+        # templates param kept for API compat but unused
+        pass
 
     def render(self, doc: Document) -> str:
-        """Render a Document to a full Akoma Ntoso 3.0 XML string."""
-        doc_type, doc_name = self._detect_doc_type(doc)
-        meta_block = self._build_meta(doc)
-        body_xml = self._render_body(doc)
+        info = INSTRUMENT_TYPES.get(doc.instrument_type, INSTRUMENT_TYPES["nomos"])
+        akn_el   = info["akn_el"]
+        akn_name = info["akn_name"]
 
-        return (
-            '<?xml version="1.0" encoding="UTF-8"?>\n'
-            f'<akomaNtoso xmlns="{self.AKN_NS}">\n'
-            f'  <{doc_type} name="{doc_name}">\n'
-            f'{meta_block}'
-            f'{body_xml}'
-            f'  </{doc_type}>\n'
-            '</akomaNtoso>\n'
-        )
-
-    # ── Document-type detection ────────────────────────────────────────────
-
-    def _detect_doc_type(self, doc: Document):
-        """Return (akn_element, name_attr) for the top-level AKN element."""
-        for child in doc.root.children:
-            tpl_id = child.template_id or ""
-            prefix = _slug(tpl_id)
-            if prefix in _DOC_LEVEL_TPLS:
-                if prefix == "tpl_egkykl":
-                    return "doc", "circular"
-                return "act", prefix.replace("tpl_", "")
-        return "act", "act"
-
-    # ── Meta block ─────────────────────────────────────────────────────────
-
-    def _build_meta(self, doc: Document) -> str:
-        today = doc.metadata.get("created_at", str(date.today()))[:10]
-        title_esc = self._x(doc.title)
-        uri = f"/gr/act/{today}/1"
         lines = [
-            '    <meta>',
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            f'<akomaNtoso xmlns="{AKN_NS}">',
+            f'  <{akn_el} name="{akn_name}">',
+        ]
+        lines += self._meta(doc, info)
+        lines += self._preface(doc)
+        lines += self._preamble(doc)
+        lines += self._body(doc)
+        lines += self._conclusions(doc)
+        lines.append(f'  </{akn_el}>')
+        lines.append('</akomaNtoso>')
+        return "\n".join(lines) + "\n"
+
+    # ── §5.2 Meta block ───────────────────────────────────────────────────────
+
+    def _meta(self, doc: Document, info: dict) -> list[str]:
+        m = doc.meta or {}
+        today = str(date_cls.today())
+        year       = _x(m.get("frbr_year", str(date_cls.today().year)))
+        number     = _x(m.get("frbr_number", ""))
+        enacted    = _x(m.get("enacted_date", "") or today)
+        author     = _x(m.get("author_href", info["author"]))
+        language   = _x(m.get("language", "ell"))
+        fek_series = _x(m.get("fek_series", ""))
+        fek_num    = _x(m.get("fek_number", ""))
+        fek_date   = _x(m.get("fek_date", "") or today)
+        subtype    = _x(m.get("frbr_subtype", ""))
+        keywords_raw = m.get("keywords", "")
+
+        uri_num = number or "0"
+        work_uri = f"/gr/act/{year}/{uri_num}"
+
+        ls = ["    <meta>"]
+
+        # identification / FRBR
+        ls += [
             '      <identification source="#isokratis">',
             '        <FRBRWork>',
-            f'          <FRBRthis value="{uri}/main"/>',
-            f'          <FRBRuri value="{uri}"/>',
-            f'          <FRBRdate date="{today}" name="Generation"/>',
-            '          <FRBRauthor href="#parliament"/>',
-            '          <FRBRcountry value="GR"/>',
+            f'          <FRBRthis value="{work_uri}/main"/>',
+            f'          <FRBRuri value="{work_uri}"/>',
+            f'          <FRBRdate date="{enacted}" name="enacted"/>',
+            f'          <FRBRauthor href="{author}"/>',
+            '          <FRBRcountry value="gr"/>',
+        ]
+        if number:
+            ls.append(f'          <FRBRnumber value="{number}"/>')
+        if subtype:
+            ls.append(f'          <FRBRsubtype value="{subtype}"/>')
+        ls += [
             '        </FRBRWork>',
             '        <FRBRExpression>',
-            f'          <FRBRthis value="{uri}/gre@/main"/>',
-            f'          <FRBRuri value="{uri}/gre@"/>',
-            f'          <FRBRdate date="{today}" name="Generation"/>',
+            f'          <FRBRthis value="{work_uri}/{language}@/main"/>',
+            f'          <FRBRuri value="{work_uri}/{language}@"/>',
+            f'          <FRBRdate date="{enacted}" name="enacted"/>',
             '          <FRBRauthor href="#isokratis"/>',
-            '          <FRBRlanguage language="gre"/>',
+            f'          <FRBRlanguage language="{language}"/>',
             '        </FRBRExpression>',
             '        <FRBRManifestation>',
-            f'          <FRBRthis value="{uri}/gre@/main.xml"/>',
-            f'          <FRBRuri value="{uri}/gre@.akn"/>',
+            f'          <FRBRthis value="{work_uri}/{language}@/main.xml"/>',
+            f'          <FRBRuri value="{work_uri}/{language}@.akn"/>',
             f'          <FRBRdate date="{today}" name="Generation"/>',
             '          <FRBRauthor href="#isokratis"/>',
             '        </FRBRManifestation>',
             '      </identification>',
+        ]
+
+        # publication (ΦΕΚ) — §5.2
+        if fek_num:
+            fek_show = f"ΦΕΚ {fek_series}΄ {fek_num}/{fek_date}" if fek_series else f"ΦΕΚ {fek_num}/{fek_date}"
+            ls.append(f'      <publication date="{fek_date}" name="ΦΕΚ" showAs="{_x(fek_show)}" number="{fek_num}"/>')
+
+        # lifecycle — §5.2
+        ls += [
+            '      <lifecycle source="#isokratis">',
+            f'        <eventRef date="{enacted}" type="generation" source="{author}" eId="ev_enacted"/>',
+            '      </lifecycle>',
+        ]
+
+        # classification / keywords — §5.2
+        if keywords_raw:
+            kws = [k.strip() for k in keywords_raw.split(",") if k.strip()]
+            ls.append('      <classification source="#isokratis">')
+            for i, kw in enumerate(kws, 1):
+                ls.append(f'        <keyword eId="kw_{i}" value="{_x(kw)}" showAs="{_x(kw)}" dictionary="#isokratis"/>')
+            ls.append('      </classification>')
+
+        # references / TLC — §5.8
+        ls += [
             '      <references source="#isokratis">',
             '        <TLCOrganization eId="parliament" href="/ontology/organization/gr/parliament" showAs="Ελληνικό Κοινοβούλιο"/>',
+            '        <TLCOrganization eId="president" href="/ontology/organization/gr/president" showAs="Πρόεδρος της Δημοκρατίας"/>',
             '        <TLCOrganization eId="isokratis" href="/ontology/organization/gr/isokratis" showAs="Isokratis"/>',
             '      </references>',
-            f'      <proprietary source="#isokratis">',
-            f'        <gr:title xmlns:gr="http://isokratis.gr/akn">{title_esc}</gr:title>',
-            f'      </proprietary>',
-            '    </meta>',
         ]
-        return "\n".join(lines) + "\n"
 
-    # ── Body ───────────────────────────────────────────────────────────────
+        ls.append("    </meta>")
+        return ls
 
-    def _render_body(self, doc: Document) -> str:
-        inner = ""
-        for i, child in enumerate(doc.root.children, 1):
-            inner += self._render_akn_node(child, depth=3, position=i)
-        if not inner.strip():
-            inner = "      <!-- empty document -->\n"
-        return f"    <body>\n{inner}    </body>\n"
+    # ── §5.3 Preface ──────────────────────────────────────────────────────────
 
-    # ── Node dispatch ──────────────────────────────────────────────────────
+    def _preface(self, doc: Document) -> list[str]:
+        p = doc.preface or {}
+        doc_type   = _x(p.get("doc_type", ""))
+        doc_number = _x(p.get("doc_number", ""))
+        doc_title  = _x(p.get("doc_title", ""))
+        doc_date   = _x(p.get("doc_date", ""))
 
-    def _render_akn_node(self, node: Node, depth: int = 3, position: int = 1) -> str:
-        indent = "  " * depth
-        tpl_id = node.template_id or ""
-        prefix = _slug(tpl_id)
+        if not any([doc_type, doc_number, doc_title, doc_date]):
+            return []
 
-        # Use template Jinja render if available and non-trivial
-        if tpl_id and tpl_id in self.templates:
-            tpl_def = self.templates[tpl_id]
-            if tpl_def.render_template and tpl_def.render_template.strip():
-                rendered = self._render_template_instance_xml(node, tpl_def, depth, position)
-                if rendered:
-                    return rendered
+        ls = ["    <preface>"]
+        if doc_type:
+            ls.append(f'      <p><docType>{doc_type}</docType></p>')
+        if doc_number:
+            ls.append(f'      <p><docNumber>ΥΠ&apos; ΑΡΙΘΜ. {doc_number}</docNumber></p>')
+        if doc_title:
+            ls.append(f'      <p><docTitle>{doc_title}</docTitle></p>')
+        if doc_date:
+            ls.append(f'      <p><docDate date="{doc_date}">{doc_date}</docDate></p>')
+        ls.append("    </preface>")
+        return ls
 
-        # Fallback: structural mapping
-        akn_el = _TPL_TO_AKN.get(prefix, "hcontainer")
-        return self._render_structural(node, akn_el, depth, position)
+    # ── §5.3 Preamble ─────────────────────────────────────────────────────────
 
-    def _render_structural(self, node: Node, akn_el: str, depth: int, position: int) -> str:
-        indent = "  " * depth
-        eid = _eid(node, position)
-        data = node.data
+    def _preamble(self, doc: Document) -> list[str]:
+        p = doc.preamble or {}
+        formula  = _x(p.get("formula", ""))
+        cit_text = p.get("citations", "")
+        citations = [c.strip() for c in (cit_text or "").splitlines() if c.strip()]
 
-        # Collect heading / number / content from data fields
-        num_val = data.get("number", data.get("arthro", data.get("id", "")))
-        heading_val = (
-            data.get("title") or data.get("titlos") or
-            data.get("name") or data.get("heading") or
-            data.get("perigrafi") or ""
-        )
-        content_val = (
-            data.get("content") or data.get("keimeno") or
-            data.get("text") or ""
-        )
+        if not formula and not citations:
+            return []
 
-        lines = [f'{indent}<{akn_el} eId="{self._x(eid)}">']
+        ls = ["    <preamble>"]
+        if formula:
+            ls.append(f'      <formula name="enactingFormula"><p>{formula}</p></formula>')
+        if citations:
+            ls.append("      <citations>")
+            for i, cit in enumerate(citations, 1):
+                ls.append(f'        <citation eId="cit_{i}"><p>{_x(cit)}</p></citation>')
+            ls.append("      </citations>")
+        ls.append("    </preamble>")
+        return ls
 
+    # ── §5.4 Body hierarchy ───────────────────────────────────────────────────
+
+    def _body(self, doc: Document) -> list[str]:
+        ls = ["    <body>"]
+        if doc.body:
+            counters: dict[str, int] = {}
+            for node in doc.body:
+                ls += self._node(node, depth=3, parent_eid="", counters=counters)
+        else:
+            ls.append("      <!-- κενό κείμενο -->")
+        ls.append("    </body>")
+        return ls
+
+    def _node(self, node: dict, depth: int, parent_eid: str, counters: dict) -> list[str]:
+        akn_type = node.get("akn_type", "hcontainer")
+        type_info = AKN_TYPES.get(akn_type, AKN_TYPES["hcontainer"])
+        prefix    = _EID.get(akn_type, "hcontainer")
+
+        # eId counter scoped to parent
+        eid_key = f"{parent_eid}__{prefix}" if parent_eid else prefix
+        counters[eid_key] = counters.get(eid_key, 0) + 1
+        pos   = counters[eid_key]
+        local = f"{prefix}_{pos}"
+        eid   = f"{parent_eid}__{local}" if parent_eid else local
+
+        num_val     = _x(str(node.get("num", "") or ""))
+        heading_val = _x(str(node.get("heading", "") or ""))
+        content_val = _x(str(node.get("content", "") or ""))
+        intro_val   = _x(str(node.get("intro", "") or ""))
+        wrapup_val  = _x(str(node.get("wrap_up", "") or ""))
+        name_attr   = _x(str(node.get("name_attr", "section") or "section"))
+        ind         = _ind(depth)
+
+        # Build opening tag
+        if akn_type == "hcontainer":
+            open_tag = f'{ind}<hcontainer eId="{eid}" name="{name_attr}">'
+            close_tag = f'{ind}</hcontainer>'
+        else:
+            open_tag = f'{ind}<{akn_type} eId="{eid}">'
+            close_tag = f'{ind}</{akn_type}>'
+
+        ls = [open_tag]
+
+        # §5.5 num / heading
         if num_val:
-            lines.append(f'{indent}  <num>{self._x(str(num_val))}</num>')
+            ls.append(f'{ind}  <num>{num_val}</num>')
         if heading_val:
-            lines.append(f'{indent}  <heading>{self._x(str(heading_val))}</heading>')
+            ls.append(f'{ind}  <heading>{heading_val}</heading>')
 
-        # Render children recursively first
-        child_xml = ""
-        for i, child in enumerate(node.children, 1):
-            child_xml += self._render_akn_node(child, depth + 1, i)
+        # §5.5 intro (before list children)
+        if intro_val:
+            ls.append(f'{ind}  <intro><p>{intro_val}</p></intro>')
 
-        if content_val:
-            lines.append(f'{indent}  <intro><p>{self._x(str(content_val))}</p></intro>')
+        # Children
+        children = node.get("children", [])
+        child_counters: dict[str, int] = {}
+        for child in children:
+            ls += self._node(child, depth + 1, eid, child_counters)
 
-        # Extra data fields as akn:FRBRprop or gr:prop
-        skip_keys = {"number", "arthro", "id", "title", "titlos", "name", "heading",
-                     "perigrafi", "content", "keimeno", "text"}
-        extra = {k: v for k, v in data.items() if k not in skip_keys and v}
-        if extra:
-            lines.append(f'{indent}  <proprietary source="#isokratis">')
-            for k, v in extra.items():
-                lines.append(f'{indent}    <gr:{self._safe_tag(k)} xmlns:gr="http://isokratis.gr/akn">{self._x(str(v))}</gr:{self._safe_tag(k)}>')
-            lines.append(f'{indent}  </proprietary>')
+        # §5.5 content (leaf text container — §5.6 p inside content)
+        if content_val and not children:
+            ls.append(f'{ind}  <content><p>{content_val}</p></content>')
+        elif content_val and children:
+            # content goes as alinea if there are also children (rare)
+            ls.append(f'{ind}  <alinea><p>{content_val}</p></alinea>')
 
-        if child_xml:
-            lines.append(child_xml.rstrip("\n"))
-        elif not content_val:
-            lines.append(f'{indent}  <content><p/></content>')
+        # §5.5 wrapUp (after list children)
+        if wrapup_val and children:
+            ls.append(f'{ind}  <wrapUp><p>{wrapup_val}</p></wrapUp>')
 
-        lines.append(f'{indent}</{akn_el}>')
-        return "\n".join(lines) + "\n"
+        # Ensure schema-valid: leaves without content get empty content
+        if not children and not content_val and akn_type not in ("part", "chapter", "section", "list", "hcontainer"):
+            ls.append(f'{ind}  <content><p/></content>')
 
-    def _render_template_instance_xml(self, node: Node, tpl_def: Template, depth: int, position: int) -> str:
-        """Use the template's Jinja render_template but strip HTML tags to get text, then wrap in AKN."""
-        try:
-            ctx = {**node.data}
-            ctx["children"] = [self._render_akn_node(c, depth + 1, i) for i, c in enumerate(node.children, 1)]
-            import jinja2
-            env = jinja2.Environment()
-            rendered = env.from_string(tpl_def.render_template).render(**ctx)
-            # Strip HTML tags — keep text only
-            text = re.sub(r'<[^>]+>', ' ', rendered).strip()
-            text = re.sub(r'\s+', ' ', text)
-            if not text and not node.children:
-                return ""
-            prefix = _slug(node.template_id or "")
-            akn_el = _TPL_TO_AKN.get(prefix, "hcontainer")
-            return self._render_structural(node, akn_el, depth, position)
-        except Exception:
-            return self._render_structural(node, "hcontainer", depth, position)
+        ls.append(close_tag)
+        return ls
 
-    # ── Utilities ──────────────────────────────────────────────────────────
+    # ── §5.10 Conclusions ─────────────────────────────────────────────────────
 
-    def _x(self, text: str) -> str:
-        """Escape XML special characters."""
-        return (str(text)
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace('"', "&quot;")
-                .replace("'", "&apos;"))
+    def _conclusions(self, doc: Document) -> list[str]:
+        c = doc.conclusions or {}
+        place = _x(c.get("place", ""))
+        dt    = _x(c.get("date", ""))
+        sigs  = c.get("signatures", "")
+        sig_lines = [s.strip() for s in (sigs or "").splitlines() if s.strip()]
 
-    def _safe_tag(self, name: str) -> str:
-        """Make a string safe for use as an XML element name."""
-        tag = re.sub(r"[^a-zA-Z0-9_\-.]", "_", name)
-        if tag and tag[0].isdigit():
-            tag = "f_" + tag
-        return tag or "field"
+        if not place and not dt and not sig_lines:
+            return []
+
+        ls = ["    <conclusions>"]
+        if place or dt:
+            loc = ", ".join(filter(None, [place, dt]))
+            ls.append(f'      <p>{_x(loc)}</p>')
+        for sig in sig_lines:
+            ls.append(f'      <signature><p>{_x(sig)}</p></signature>')
+        ls.append("    </conclusions>")
+        return ls

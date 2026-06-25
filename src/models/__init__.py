@@ -1,17 +1,10 @@
 """Models for the Legislature Builder."""
 
-from .node import Node, NodeType
-from .template import Template, TemplateField, TemplateChildSlot, TemplateFieldType
-from .document import Document
-from .reference import Reference
+from .document import Document, INSTRUMENT_TYPES, AKN_TYPES, BODY_ROOT_CAN_ADD
 
 __all__ = [
-    "Node",
-    "NodeType",
-    "Template",
-    "TemplateField",
-    "TemplateChildSlot",
-    "TemplateFieldType",
     "Document",
-    "Reference",
+    "INSTRUMENT_TYPES",
+    "AKN_TYPES",
+    "BODY_ROOT_CAN_ADD",
 ]
