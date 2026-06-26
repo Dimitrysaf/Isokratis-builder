@@ -88,9 +88,6 @@ def _p(parent: etree._Element, text: str) -> etree._Element:
 class AkomaNtosoRenderer(BaseRenderer):
     """Render a Document to Akoma Ntoso 3.0 XML (lxml, schema-valid)."""
 
-    def __init__(self, templates=None):
-        pass  # templates param kept for API compat
-
     def render(self, doc: Document) -> str:
         info    = INSTRUMENT_TYPES.get(doc.instrument_type, INSTRUMENT_TYPES["nomos"])
         akn_el  = info["akn_el"]    # "act" or "doc"
