@@ -3,191 +3,299 @@
 
 {% block head %}
 <style>
-  /* ── LEOS-style three-pane editor ─────────────────────────────────────── */
-  body { overflow: hidden; }
+  /* ── reset body for full-screen editor ─────────────────────────────────── */
+  body { overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+  header.topbar { flex-shrink: 0; padding: 0; height: auto; }
+
+  /* ── LEOS-style secondary toolbar (below the topbar) ───────────────────── */
+  .leos-breadcrumb {
+    background: #1a3c40; /* darker teal, like LEOS' deep navy */
+    color: #c8dfe0;
+    padding: 7px 18px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; border-bottom: 1px solid #0f2426;
+  }
+  .leos-breadcrumb a { color: #8bbfc4; text-decoration: none; }
+  .leos-breadcrumb a:hover { color: #fff; text-decoration: underline; }
+  .leos-breadcrumb .sep { opacity: .45; font-size: 11px; }
+  .leos-breadcrumb .crumb-cur { color: #fff; font-weight: 600; }
+  .leos-breadcrumb .bc-actions { margin-left: auto; display: flex; gap: 6px; }
+  .bc-btn {
+    padding: 4px 11px; border-radius: 4px; border: 1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.08); color: #c8dfe0; cursor: pointer;
+    font-size: 12px; font-family: inherit;
+  }
+  .bc-btn:hover { background: rgba(255,255,255,.18); color: #fff; border-color: rgba(255,255,255,.5); }
+  .bc-btn.primary { background: var(--accent); border-color: #3d7d82; color: #fff; }
+  .bc-btn.primary:hover { background: #3d7d82; }
+  #save-status { font-size: 11px; color: #8bbfc4; }
+
+  /* ── three-pane grid ────────────────────────────────────────────────────── */
   .leos {
     display: grid;
-    grid-template-columns: 270px 1fr 320px;
-    height: calc(100vh - 45px);
+    grid-template-columns: 260px 1fr 300px;
+    flex: 1;
     overflow: hidden;
+    min-height: 0;
   }
 
-  /* Shared pane chrome */
-  .pane { display: flex; flex-direction: column; overflow: hidden; background: var(--panel); }
-  .pane-head {
-    padding: 9px 14px; font-size: 11px; font-weight: 700; letter-spacing: .06em;
-    text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border);
-    flex-shrink: 0; display: flex; align-items: center; gap: 8px;
-  }
+  /* shared pane chrome */
+  .pane { display: flex; flex-direction: column; overflow: hidden; }
   .pane-body { overflow-y: auto; flex: 1; }
 
-  /* ── LEFT: navigation / table of contents ──────────────────────────────── */
-  .nav-pane { border-right: 1px solid var(--border); }
-  .toc { padding: 8px; }
-  .toc-node { }
-  .toc-row {
-    display: flex; align-items: center; gap: 5px; padding: 4px 7px;
-    border-radius: 5px; cursor: pointer; font-size: 12.5px; line-height: 1.3;
+  /* ── LEFT: dark navigation pane (real LEOS look) ───────────────────────── */
+  .nav-pane {
+    background: #243b3d;
+    border-right: 1px solid #152628;
+    color: #c8dfe0;
   }
-  .toc-row:hover { background: var(--accent-soft); }
-  .toc-row.selected { background: var(--accent); color: var(--accent-ink); }
-  .toc-row.selected .toc-tag { background: rgba(255,255,255,.22); color: #fff; }
-  .toc-toggle { width: 12px; text-align: center; color: var(--muted); font-size: 10px; flex-shrink: 0; }
-  .toc-row.selected .toc-toggle { color: #fff; }
+  .nav-pane .pane-head {
+    padding: 11px 14px; font-size: 10.5px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase; color: #7aacb1;
+    border-bottom: 1px solid #152628; flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .toc { padding: 6px 4px; }
+  .toc-row {
+    display: flex; align-items: center; gap: 4px;
+    padding: 5px 8px; border-radius: 4px; cursor: pointer;
+    font-size: 12px; line-height: 1.3; color: #b4d0d3;
+    transition: background .1s;
+  }
+  .toc-row:hover { background: rgba(255,255,255,.08); color: #e0f0f1; }
+  .toc-row.selected { background: rgba(47,93,98,.7); color: #fff; }
+  .toc-row.selected .toc-tag { background: rgba(255,255,255,.15); color: #9de0e4; }
+  .toc-toggle { width: 13px; text-align: center; color: #6a9a9e; font-size: 9px; flex-shrink: 0; }
+  .toc-row.selected .toc-toggle { color: #9de0e4; }
   .toc-tag {
-    font-size: 9.5px; background: var(--accent-soft); color: var(--accent);
-    border-radius: 3px; padding: 1px 5px; flex-shrink: 0; font-weight: 600;
+    font-size: 9px; background: rgba(255,255,255,.1); color: #7aacb1;
+    border-radius: 3px; padding: 1px 5px; flex-shrink: 0; font-weight: 600; letter-spacing: .03em;
   }
   .toc-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .toc-children { margin-left: 13px; border-left: 1px solid var(--border); padding-left: 4px; }
-  .toc-add { padding: 8px 10px; border-top: 1px solid var(--border); }
+  .toc-children {
+    margin-left: 10px; border-left: 1px solid rgba(255,255,255,.07);
+    padding-left: 5px;
+  }
+  .toc-add {
+    padding: 10px 10px 12px;
+    border-top: 1px solid #152628;
+    flex-shrink: 0;
+  }
+  .toc-add-label { font-size: 10px; color: #6a9a9e; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+  .add-chip {
+    display: inline-block; padding: 3px 9px; font-size: 11px; margin: 2px 2px 0 0;
+    border: 1px solid rgba(255,255,255,.15); border-radius: 4px;
+    background: rgba(255,255,255,.05); cursor: pointer; color: #9dc8cc;
+    transition: background .1s, color .1s;
+  }
+  .add-chip:hover { background: rgba(47,93,98,.6); color: #e0f0f1; border-color: rgba(255,255,255,.3); }
 
-  /* ── CENTER: the legal document (LEOS-style) ───────────────────────────── */
-  .doc-pane { background: #cfd6da; }
+  /* ── CENTER: document canvas ────────────────────────────────────────────── */
+  .doc-pane { background: #c9d2d8; }
   .doc-toolbar {
-    padding: 6px 14px; border-bottom: 1px solid var(--border);
-    background: linear-gradient(var(--panel), #f3f6f7);
+    padding: 6px 16px; border-bottom: 1px solid #b0bcc3;
+    background: #dce2e6;
     display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    box-shadow: 0 1px 0 rgba(0,0,0,.06);
   }
-  .doc-scroll { overflow-y: auto; flex: 1; padding: 30px 0 100px; }
-  .doc-sheet {
-    background: #fff; max-width: 760px; margin: 0 auto; padding: 56px 72px 64px 96px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.18);
-    font-family: "Arial", "Helvetica Neue", -apple-system, sans-serif; color: #222;
-    font-size: 14.5px; line-height: 1.7; text-align: justify;
-  }
-  /* document header block (act title) — LEOS shows it boxed at top */
-  .doc-title { text-align: center; font-weight: 700; font-size: 18px; margin: 0 0 4px;
-               letter-spacing: .01em; }
-  .doc-subtitle { text-align: center; color: #444; font-size: 13px; margin: 0 0 8px; font-weight: 600; }
-  .doc-headrule { border: none; border-top: 2px solid var(--accent); width: 64px; margin: 14px auto 34px; }
+  .doc-toolbar-lbl { font-size: 11.5px; color: #546570; letter-spacing: .02em; }
+  .doc-scroll { overflow-y: auto; flex: 1; padding: 32px 0 120px; }
 
-  /* element wrappers — LEOS active-edit bar on the left */
-  .akn-el { position: relative; margin: 0 0 6px; padding: 3px 8px 3px 10px;
-            border-left: 3px solid transparent; transition: background .1s, border-color .1s; }
-  .akn-el:hover { background: #f4f8f8; border-left-color: var(--accent-soft); }
-  .akn-el.selected { background: #eef6f5; border-left-color: var(--accent); }
+  /* the white paper */
+  .doc-sheet {
+    background: #fff;
+    max-width: 780px; margin: 0 auto;
+    padding: 64px 80px 72px 104px;
+    box-shadow: 0 3px 14px rgba(0,0,0,.22), 0 1px 3px rgba(0,0,0,.1);
+    font-family: "Arial", "Helvetica Neue", sans-serif;
+    color: #1a1a1a; font-size: 14.5px; line-height: 1.75;
+  }
+  /* document header — centred typographic block (LEOS) */
+  .doc-hdr { text-align: center; margin-bottom: 28px; padding-bottom: 18px;
+             border-bottom: 2px solid var(--accent); }
+  .doc-hdr-type { font-size: 11px; font-weight: 700; letter-spacing: .12em;
+                  text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .doc-hdr-num  { font-size: 22px; font-weight: 700; margin: 0 0 4px; }
+  .doc-hdr-title{ font-size: 14px; font-weight: 600; color: #333; max-width: 540px;
+                  margin: 0 auto; line-height: 1.5; }
+
+  /* element wrappers */
+  .akn-el {
+    position: relative; margin: 0 0 4px; padding: 3px 6px 3px 12px;
+    border-left: 3px solid transparent; transition: background .1s, border-color .1s;
+  }
+  .akn-el:hover { background: #f4f9f9; border-left-color: #a8cdd0; }
+  .akn-el.selected { background: #eaf4f4; border-left-color: var(--accent); }
   .akn-el:hover > .akn-gutter { opacity: 1; }
   .akn-gutter {
-    position: absolute; left: -78px; top: 1px; display: flex; gap: 2px;
-    opacity: 0; transition: opacity .12s;
+    position: absolute; left: -74px; top: 2px;
+    display: flex; gap: 2px; opacity: 0; transition: opacity .12s;
   }
   .akn-gutter button {
-    border: 1px solid var(--border); background: #fff; border-radius: 4px;
+    border: 1px solid #c0cfd2; background: #f0f6f7; border-radius: 4px;
     width: 22px; height: 22px; cursor: pointer; font-size: 12px; line-height: 1;
-    color: var(--muted); padding: 0;
+    color: #6a8a8e; padding: 0; transition: border-color .1s, color .1s;
   }
-  .akn-gutter button:hover { border-color: var(--accent); color: var(--accent); }
+  .akn-gutter button:hover { border-color: var(--accent); color: var(--accent); background: #e2edec; }
 
-  /* headings by hierarchy level — LEOS centres part/chapter/article headings */
-  .akn-part    > .akn-self .h { text-align: center; font-weight: 700; font-size: 15px; margin-top: 26px; text-transform: uppercase; letter-spacing: .04em; }
-  .akn-chapter > .akn-self .h { text-align: center; font-weight: 700; font-size: 14px; margin-top: 20px; text-transform: uppercase; }
-  .akn-section > .akn-self .h { text-align: center; font-weight: 600; font-size: 14px; margin-top: 16px; }
-  .akn-article > .akn-self .h { text-align: center; margin-top: 26px; }
-  .akn-article > .akn-self .h .akn-num { display: block; font-weight: 700; font-size: 14.5px; }
-  .akn-article > .akn-self .h .akn-heading { display: block; font-weight: 700; font-style: normal; margin-top: 1px; }
-  .akn-self { }
+  /* hierarchy headings — LEOS centres act/part/chapter/article headings */
+  .akn-part    > .akn-self .h { text-align: center; font-weight: 700; font-size: 15px;
+    margin: 28px 0 10px; text-transform: uppercase; letter-spacing: .05em; }
+  .akn-chapter > .akn-self .h { text-align: center; font-weight: 700; font-size: 14.5px;
+    margin: 22px 0 8px; text-transform: uppercase; }
+  .akn-section > .akn-self .h { text-align: center; font-weight: 600; font-size: 14px;
+    margin: 18px 0 6px; }
+  .akn-article > .akn-self .h { text-align: center; margin: 28px 0 8px; }
+  .akn-article > .akn-self .h .akn-num  { display: block; font-weight: 700; font-size: 14.5px; }
+  .akn-article > .akn-self .h .akn-heading { display: block; font-weight: 700; font-size: 14px;
+    margin-top: 2px; }
   .akn-num { font-weight: 700; }
   .akn-self .h { margin-bottom: 6px; }
   .akn-self .h .akn-heading { display: block; font-weight: 600; }
 
-  /* paragraphs: number in the margin, justified body (LEOS) */
-  .akn-paragraph > .akn-self { display: flex; gap: 10px; }
-  .akn-paragraph > .akn-self .akn-num { min-width: 22px; flex-shrink: 0; }
-  .akn-paragraph > .akn-self .akn-content { flex: 1; text-align: justify; }
-  .akn-point > .akn-self, .akn-indent > .akn-self { display: flex; gap: 10px; }
-  .akn-point > .akn-self .akn-num, .akn-indent > .akn-self .akn-num { min-width: 26px; flex-shrink: 0; }
-  .akn-point { margin-left: 14px; } .akn-indent { margin-left: 28px; }
+  /* paragraph: number margin + justified body */
+  .akn-paragraph > .akn-self { display: flex; gap: 12px; text-align: justify; }
+  .akn-paragraph > .akn-self .akn-num { min-width: 22px; flex-shrink: 0; font-weight: 700; }
+  .akn-paragraph > .akn-self .akn-content { flex: 1; }
+  .akn-point > .akn-self, .akn-indent > .akn-self { display: flex; gap: 10px; text-align: justify; }
+  .akn-point > .akn-self .akn-num, .akn-indent > .akn-self .akn-num { min-width: 24px; flex-shrink: 0; }
+  .akn-point { margin-left: 16px; } .akn-indent { margin-left: 32px; }
 
-  .akn-children { margin-left: 16px; }
+  .akn-children { margin-left: 18px; }
   .akn-article > .akn-children, .akn-part > .akn-children,
   .akn-chapter > .akn-children, .akn-section > .akn-children { margin-left: 0; }
 
-  .akn-intro { font-style: italic; color: #333; margin-bottom: 4px; }
-  .akn-wrapup { font-style: italic; color: #333; margin-top: 4px; }
+  .akn-intro  { font-style: italic; color: #333; margin-bottom: 4px; text-align: justify; }
+  .akn-wrapup { font-style: italic; color: #333; margin-top: 4px; text-align: justify; }
+  .akn-content { text-align: justify; }
 
   [contenteditable] { outline: none; }
-  [contenteditable]:focus { background: #eef6f5; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--accent); }
-  [contenteditable].ph:empty:before { content: attr(data-ph); color: #b8b8b8; font-style: italic; }
+  [contenteditable]:focus {
+    background: #e8f4f4; border-radius: 3px;
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+  }
+  [contenteditable].ph:empty:before { content: attr(data-ph); color: #b0b0b0; font-style: italic; }
 
-  .doc-empty { text-align: center; color: #999; padding: 40px 0; font-family: sans-serif; }
+  .doc-empty { text-align: center; color: #aaa; padding: 48px 0;
+               font-family: sans-serif; font-size: 14px; }
 
   /* ── RIGHT: properties / annotations sidebar ───────────────────────────── */
-  .side-pane { border-left: 1px solid var(--border); }
-  .side-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .side-tab {
-    flex: 1; padding: 9px 2px; text-align: center; font-size: 11px; cursor: pointer;
-    color: var(--muted); border: none; background: none; border-bottom: 2px solid transparent;
-    font-family: inherit;
+  .side-pane {
+    background: #f5f7f8;
+    border-left: 1px solid #c4cdd2;
+    display: flex; flex-direction: column;
   }
-  .side-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-  .side-content { overflow-y: auto; flex: 1; }
-  .side-section { display: none; padding: 14px; }
+  .side-tabs {
+    display: flex; border-bottom: 1px solid #c4cdd2; flex-shrink: 0;
+    background: #edf0f2;
+  }
+  .side-tab {
+    flex: 1; padding: 10px 4px; text-align: center; font-size: 11px; cursor: pointer;
+    color: #6a7e86; border: none; background: none; border-bottom: 2px solid transparent;
+    font-family: inherit; font-weight: 500; letter-spacing: .03em;
+    transition: color .1s, border-color .1s;
+  }
+  .side-tab:hover { color: var(--accent); }
+  .side-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; background: #fff; }
+  .side-content { overflow-y: auto; flex: 1; background: #fff; }
+  .side-section { display: none; padding: 14px 15px; }
   .side-section.active { display: block; }
+  .side-section h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .07em;
+    color: #6a7e86; margin: 0 0 10px; padding-bottom: 6px;
+    border-bottom: 1px solid #e0e7ea; }
 
   .xml-out {
-    background: #1e2228; color: #cdd6cf; font-family: 'Fira Code', monospace;
-    font-size: 11px; white-space: pre; padding: 12px; height: 100%; overflow: auto;
+    background: #1b2027; color: #bdd6bd; font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 11px; white-space: pre; padding: 14px; height: 100%; overflow: auto;
+    tab-size: 2;
   }
-  .version-row { display: flex; align-items: center; gap: 7px; padding: 7px 0;
-                 border-bottom: 1px solid var(--border); font-size: 12px; }
+  .version-row {
+    display: flex; align-items: center; gap: 7px; padding: 8px 0;
+    border-bottom: 1px solid #edf0f2; font-size: 12px;
+  }
   .version-row:last-child { border-bottom: none; }
-  #save-status { font-size: 12px; }
-  .add-chip {
-    display: inline-block; padding: 3px 8px; font-size: 11px; margin: 2px 3px 0 0;
-    border: 1px solid var(--border); border-radius: 5px; background: #fff;
-    cursor: pointer; color: var(--ink);
+
+  /* ── topbar overrides for editor ───────────────────────────────────────── */
+  header.topbar {
+    background: #2f5d62; padding: 9px 18px; min-height: 44px;
   }
-  .add-chip:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 {% endblock %}
 
 {% block topbar %}
-  <span style="opacity:.85;font-size:13px">{{ doc.title or 'Χωρίς τίτλο' }}</span>
-  <span id="save-status" style="margin-left:8px"></span>
-  <div style="margin-left:auto;display:flex;gap:8px">
-    <button class="btn" onclick="saveVersion()">Έκδοση</button>
-    <a href="{{ url_for('export_akn', doc_id=doc.doc_id) }}" class="btn">⬇ AKN XML</a>
-    <a href="{{ url_for('index') }}" class="btn">← Λίστα</a>
+  <span style="font-size:13px;font-weight:600;letter-spacing:.02em">Isokratis</span>
+  <span style="opacity:.45;font-size:13px">|</span>
+  <span style="font-size:12px;opacity:.7">Επεξεργαστής νομοθεσίας</span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+    <span id="save-status"></span>
+    <a href="{{ url_for('index') }}" class="bc-btn">← Λίστα</a>
   </div>
 {% endblock %}
 
 {% block body %}
+
+<!-- LEOS-style breadcrumb / secondary toolbar -->
+<div class="leos-breadcrumb">
+  <a href="{{ url_for('index') }}">Αρχείο</a>
+  <span class="sep">›</span>
+  <span class="crumb-cur">{{ doc.title or 'Χωρίς τίτλο' }}</span>
+  <span class="sep">&nbsp;·&nbsp;</span>
+  <span style="color:#7aacb1;font-size:11px">{{ doc.instrument_type or 'nomos' }}</span>
+  <div class="bc-actions">
+    <button class="bc-btn" onclick="saveVersion()">⊕ Νέα έκδοση</button>
+    <a href="{{ url_for('export_akn', doc_id=doc.doc_id) }}" class="bc-btn primary">⬇ AKN XML</a>
+  </div>
+</div>
+
+<!-- three-pane editor grid -->
 <div class="leos">
 
-  <!-- ══ LEFT: navigation ══════════════════════════════════════════════════ -->
+  <!-- ══ LEFT: table of contents (dark pane) ══════════════════════════════ -->
   <div class="pane nav-pane">
-    <div class="pane-head">Πλοήγηση</div>
+    <div class="pane-head">
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style="opacity:.6">
+        <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="10" height="2" rx="1"/>
+        <rect x="1" y="12" width="12" height="2" rx="1"/>
+      </svg>
+      Πίνακας Περιεχομένων
+    </div>
     <div class="pane-body">
       <div class="toc" id="toc"></div>
     </div>
     <div class="toc-add">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Προσθήκη στη ρίζα</div>
+      <div class="toc-add-label">Προσθήκη στη ρίζα</div>
       <div id="root-add"></div>
     </div>
   </div>
 
-  <!-- ══ CENTER: the document ══════════════════════════════════════════════ -->
+  <!-- ══ CENTER: the legal document ════════════════════════════════════════ -->
   <div class="pane doc-pane">
     <div class="doc-toolbar">
-      <span style="font-size:12px;color:var(--muted)">Κείμενο εγγράφου · κάντε κλικ για επεξεργασία</span>
-      <button class="btn" style="margin-left:auto;padding:5px 10px;font-size:12px"
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="#6a8a8e">
+        <path d="M11.5 1.5a2.12 2.12 0 0 1 3 3L5 14l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      <span class="doc-toolbar-lbl">Κάντε κλικ σε ένα στοιχείο για επεξεργασία</span>
+      <button style="margin-left:auto;padding:4px 10px;font-size:11.5px;border-radius:4px;
+              border:1px solid #b0bcc3;background:#edf0f2;cursor:pointer;color:#4a6a6e"
               onclick="refreshPreview(); showSide('s-akn', document.querySelector('[data-tab=s-akn]'))">
         ↺ AKN preview
       </button>
     </div>
     <div class="doc-scroll">
       <div class="doc-sheet">
-        <div class="doc-title" id="doc-disp-title">{{ doc.title or 'Χωρίς τίτλο' }}</div>
-        <div class="doc-subtitle" id="doc-disp-sub"></div>
-        <hr class="doc-headrule">
+        <!-- document typographic header -->
+        <div class="doc-hdr">
+          <div class="doc-hdr-type" id="doc-disp-type"></div>
+          <div class="doc-hdr-num"  id="doc-disp-num"></div>
+          <div class="doc-hdr-title" id="doc-disp-title">{{ doc.title or 'Χωρίς τίτλο' }}</div>
+        </div>
+        <!-- body elements rendered here -->
         <div id="doc-body"></div>
       </div>
     </div>
   </div>
 
-  <!-- ══ RIGHT: properties / versions / AKN ════════════════════════════════ -->
+  <!-- ══ RIGHT: properties / annotations / AKN ═════════════════════════════ -->
   <div class="pane side-pane">
     <div class="side-tabs">
       <button class="side-tab active" data-tab="s-doc"  onclick="showSide('s-doc',this)">Έγγραφο</button>
@@ -199,6 +307,7 @@
 
       <!-- Document metadata -->
       <div id="s-doc" class="side-section active">
+        <h4>Ταυτότητα εγγράφου</h4>
         <div class="field"><label>Τίτλος</label><input id="f-title" value="{{ doc.title }}"></div>
         <div class="field"><label>Αριθμός (FRBR)</label><input id="f-frbr_number" value="{{ doc.meta.frbr_number }}"></div>
         <div class="field"><label>Έτος</label><input id="f-frbr_year" value="{{ doc.meta.frbr_year }}"></div>
@@ -213,27 +322,27 @@
         <div class="field"><label>Ημ/νία ΦΕΚ</label><input type="date" id="f-fek_date" value="{{ doc.meta.fek_date }}"></div>
         <div class="field"><label>Ημ/νία ψήφισης</label><input type="date" id="f-enacted_date" value="{{ doc.meta.enacted_date }}"></div>
         <div class="field"><label>Λέξεις-κλειδιά</label><textarea id="f-keywords" rows="2">{{ doc.meta.keywords }}</textarea></div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
+        <h4>Προοίμιο / Προκεφαλίδα</h4>
         <div class="field"><label>Τύπος πράξης</label><input id="f-doc_type" value="{{ doc.preface.doc_type }}"></div>
         <div class="field"><label>Αριθμός πράξης</label><input id="f-doc_number" value="{{ doc.preface.doc_number }}"></div>
         <div class="field"><label>Τίτλος περιεχομένου</label><textarea id="f-doc_title" rows="3">{{ doc.preface.doc_title }}</textarea></div>
         <div class="field"><label>Ημ/νία πράξης</label><input type="date" id="f-doc_date" value="{{ doc.preface.doc_date }}"></div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
-        <div class="field"><label>Φόρμουλα προοιμίου</label><textarea id="f-formula" rows="3">{{ doc.preamble.formula }}</textarea></div>
-        <div class="field"><label>Αναφορές (citations)</label><textarea id="f-citations" rows="4">{{ doc.preamble.citations }}</textarea></div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
+        <div class="field"><label>Φόρμουλα προοιμίου</label><textarea id="f-formula" rows="2">{{ doc.preamble.formula }}</textarea></div>
+        <div class="field"><label>Αναφορές (citations)</label><textarea id="f-citations" rows="3">{{ doc.preamble.citations }}</textarea></div>
+        <h4>Υπογραφές</h4>
         <div class="field"><label>Τόπος υπογραφής</label><input id="f-place" value="{{ doc.conclusions.place }}"></div>
         <div class="field"><label>Ημ/νία υπογραφής</label><input type="date" id="f-sign_date" value="{{ doc.conclusions.date }}"></div>
         <div class="field"><label>Υπογραφές (μία/γραμμή)</label><textarea id="f-signatures" rows="3">{{ doc.conclusions.signatures }}</textarea></div>
       </div>
 
-      <!-- Selected element -->
+      <!-- Selected element panel -->
       <div id="s-el" class="side-section">
-        <p class="muted" style="font-size:12.5px">Επιλέξτε στοιχείο από το κείμενο ή την πλοήγηση.</p>
+        <p class="muted" style="font-size:12.5px">Επιλέξτε στοιχείο από το κείμενο ή τον Π.Π.</p>
       </div>
 
       <!-- Versions -->
       <div id="s-ver" class="side-section">
+        <h4>Ιστορικό εκδόσεων</h4>
         <div id="versions-list">
           {% for v in versions %}
           <div class="version-row">
@@ -245,15 +354,15 @@
           {% endfor %}
           {% if not versions %}<p class="muted" style="font-size:12px">Καμία αποθηκευμένη έκδοση.</p>{% endif %}
         </div>
-        <div style="margin-top:10px;display:flex;gap:6px">
-          <input id="version-note" placeholder="Σχόλιο έκδοσης" style="flex:1">
+        <div style="margin-top:12px;display:flex;gap:6px">
+          <input id="version-note" placeholder="Σχόλιο έκδοσης…" style="flex:1;font-size:12px">
           <button class="btn primary" onclick="saveVersion()">+</button>
         </div>
       </div>
 
       <!-- AKN preview -->
       <div id="s-akn" class="side-section" style="padding:0;height:100%">
-        <div class="xml-out" id="xml-out"><span style="color:#6c7a6c">— Πατήστε «AKN preview» —</span></div>
+        <div class="xml-out" id="xml-out"><span style="color:#5c7c5c">— Πατήστε «AKN preview» —</span></div>
       </div>
 
     </div>
@@ -266,7 +375,7 @@ let docState = {{ doc_json | safe }};
 const AKN_TYPES = {{ akn_types_json | safe }};
 const BODY_ROOT_CAN_ADD = {{ body_root_can_add_json | safe }};
 let selectedPath = null;
-const collapsed = new Set();   // TOC collapse state (LEOS-style)
+const collapsed = new Set();
 
 // ── tabs ──────────────────────────────────────────────────────────────────────
 function showSide(id, btn) {
@@ -299,9 +408,17 @@ function collectMeta() {
   });
   Object.assign(docState.preamble, { formula:g('f-formula'), citations:g('f-citations') });
   Object.assign(docState.conclusions, { place:g('f-place'), date:g('f-sign_date'), signatures:g('f-signatures') });
-  document.getElementById('doc-disp-title').textContent = docState.title || 'Χωρίς τίτλο';
-  document.getElementById('doc-disp-sub').textContent =
-    [docState.preface.doc_type, docState.preface.doc_number].filter(Boolean).join(' ');
+  // update header
+  const el = document.getElementById('doc-disp-title');
+  if (el) el.textContent = docState.title || 'Χωρίς τίτλο';
+  const et = document.getElementById('doc-disp-type');
+  if (et) et.textContent = docState.preface.doc_type || '';
+  const en = document.getElementById('doc-disp-num');
+  if (en) {
+    const num  = docState.preface.doc_number  || '';
+    const year = (docState.meta.frbr_year || '');
+    en.textContent = num ? `${num}/${year}` : (year || '');
+  }
 }
 document.querySelectorAll('#s-doc input, #s-doc select, #s-doc textarea')
   .forEach(el => el.addEventListener('input', () => { collectMeta(); autoSave(); }));
@@ -310,13 +427,14 @@ document.querySelectorAll('#s-doc input, #s-doc select, #s-doc textarea')
 let saveTimer = null;
 function autoSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(doSave, 1000); }
 async function doSave() {
-  const st = document.getElementById('save-status'); st.textContent = '…';
+  const st = document.getElementById('save-status');
+  if (st) st.textContent = '…';
   try {
     const r = await fetch(`/api/documents/${DOC_ID}/save`, {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(docState) });
     const j = await r.json();
-    st.textContent = j.ok ? '✓ Αποθηκεύτηκε' : '⚠ Σφάλμα';
-  } catch { st.textContent = '⚠ Αποτυχία'; }
+    if (st) st.textContent = j.ok ? '✓' : '⚠';
+  } catch { if (st) st.textContent = '⚠'; }
 }
 
 // ── versions ──────────────────────────────────────────────────────────────────
@@ -356,7 +474,7 @@ function renderDocument() {
   const root = document.getElementById('doc-body');
   root.innerHTML = '';
   if (!docState.body || !docState.body.length) {
-    root.innerHTML = '<div class="doc-empty">Κενό σώμα — προσθέστε στοιχείο από την πλοήγηση.</div>';
+    root.innerHTML = '<div class="doc-empty">Κενό σώμα εγγράφου — προσθέστε στοιχείο από τον Πίνακα Περιεχομένων.</div>';
   } else {
     docState.body.forEach((n,i) => root.appendChild(renderEl(n, [i])));
   }
@@ -374,7 +492,10 @@ function editable(field, path, val, cls, ph) {
     autoSave();
   });
   d.addEventListener('blur', renderTOC);
-  d.addEventListener('focus', e => { e.stopPropagation(); selectNode(JSON.parse(d.closest('.akn-el').dataset.path), false); });
+  d.addEventListener('focus', e => {
+    e.stopPropagation();
+    selectNode(JSON.parse(d.closest('.akn-el').dataset.path), false);
+  });
   return d;
 }
 function renderEl(node, path) {
@@ -385,7 +506,7 @@ function renderEl(node, path) {
   if (selectedPath && JSON.stringify(selectedPath) === JSON.stringify(path)) wrap.classList.add('selected');
   wrap.addEventListener('click', e => { e.stopPropagation(); selectNode(path); });
 
-  // gutter (edit pencil / add child / delete) — LEOS hover affordance
+  // gutter
   const gut = document.createElement('div'); gut.className = 'akn-gutter';
   const pen = document.createElement('button'); pen.textContent = '✎'; pen.title = 'Επεξεργασία';
   pen.onclick = e => {
@@ -404,7 +525,7 @@ function renderEl(node, path) {
   gut.appendChild(del);
   wrap.appendChild(gut);
 
-  // self line
+  // self
   const self = document.createElement('div'); self.className = 'akn-self';
   const flds = info.fields || [];
   const isHeadingEl = ['part','chapter','section','article','hcontainer'].includes(node.akn_type);
@@ -427,7 +548,6 @@ function renderEl(node, path) {
     node.children.forEach((c,i) => ch.appendChild(renderEl(c, [...path,i])));
     wrap.appendChild(ch);
   }
-  // list wrap_up rendered after children
   if (flds.includes('wrap_up')) {
     const w = editable('wrap_up', path, node.wrap_up, 'akn-wrapup', 'Καταληκτικό κείμενο');
     wrap.appendChild(w);
@@ -439,7 +559,7 @@ function renderEl(node, path) {
 function renderTOC() {
   const el = document.getElementById('toc'); el.innerHTML = '';
   if (!docState.body || !docState.body.length) {
-    el.innerHTML = '<p class="muted" style="font-size:12px;padding:6px">Κενό.</p>';
+    el.innerHTML = '<p style="font-size:11.5px;padding:10px 12px;color:#6a9a9e;font-style:italic">Κενό — προσθέστε στοιχεία παρακάτω.</p>';
   } else docState.body.forEach((n,i) => el.appendChild(tocNode(n,[i])));
   renderRootAdd();
 }
@@ -447,21 +567,21 @@ function tocNode(node, path) {
   const info = AKN_TYPES[node.akn_type] || {label:node.akn_type};
   const key  = JSON.stringify(path);
   const wrap = document.createElement('div'); wrap.className = 'toc-node';
-  const row = document.createElement('div');
+  const row  = document.createElement('div');
   row.className = 'toc-row' + (selectedPath && JSON.stringify(selectedPath)===key ? ' selected':'');
-  const has = node.children && node.children.length;
+  const has  = node.children && node.children.length;
   const isCol = collapsed.has(key);
-  const tog = document.createElement('span');
+  const tog  = document.createElement('span');
   tog.className = 'toc-toggle';
   tog.textContent = has ? (isCol ? '▸' : '▾') : '·';
-  if (has) tog.onclick = e => {           // LEOS-style collapse/expand
+  if (has) tog.onclick = e => {
     e.stopPropagation();
     isCol ? collapsed.delete(key) : collapsed.add(key);
     renderTOC();
   };
   const tag = document.createElement('span'); tag.className = 'toc-tag'; tag.textContent = info.label;
   const lbl = document.createElement('span'); lbl.className = 'toc-label';
-  lbl.textContent = `${node.num||''} ${node.heading||node.content||''}`;
+  lbl.textContent = `${node.num||''} ${node.heading||node.content||''}`.trim();
   row.append(tog, tag, lbl);
   row.addEventListener('click', () => selectNode(path));
   wrap.appendChild(row);
@@ -482,44 +602,42 @@ function renderRootAdd() {
   });
 }
 
-// ── selection → right "Στοιχείο" panel ────────────────────────────────────────
+// ── selection ─────────────────────────────────────────────────────────────────
 function selectNode(path, scroll=true) {
   selectedPath = path;
   renderTOC();
-  // re-mark center without full re-render
   document.querySelectorAll('.akn-el.selected').forEach(e => e.classList.remove('selected'));
   const elc = document.querySelector(`.akn-el[data-path='${JSON.stringify(path)}']`);
-  if (elc) { elc.classList.add('selected'); if (scroll) elc.scrollIntoView({block:'center', behavior:'smooth'}); }
+  if (elc) {
+    elc.classList.add('selected');
+    if (scroll) elc.scrollIntoView({block:'center', behavior:'smooth'});
+  }
   renderElPanel(path);
 }
 function renderElPanel(path) {
   const node = getNodeAt(path); if (!node) return;
   const info = AKN_TYPES[node.akn_type] || {fields:[], can_add:[], label:node.akn_type};
   const p = document.getElementById('s-el');
-  let html = `<h3 style="margin:0 0 4px;font-size:14px">${esc(info.label)}</h3>
-    <div class="muted" style="font-size:11px;margin-bottom:12px">Διαδρομή: ${path.join(' › ')}</div>`;
-
+  let html = `<h4>${esc(info.label)}</h4>
+    <div class="muted" style="font-size:11px;margin-bottom:12px">Διαδρομή: [${path.join(', ')}]</div>`;
   if ((info.fields||[]).includes('name_attr')) {
     html += `<div class="field"><label>Όνομα (name attr)</label>
       <input id="el-name_attr" value="${esc(node.name_attr)}"></div>`;
   }
-  // structural ops
-  html += '<div style="margin:6px 0 10px"><label>Μετακίνηση</label><div style="display:flex;gap:6px">' +
+  html += '<div class="field"><label>Μετακίνηση</label><div style="display:flex;gap:6px">' +
     `<button class="btn" style="flex:1;padding:4px" onclick="moveNode(-1)">↑ Πάνω</button>` +
     `<button class="btn" style="flex:1;padding:4px" onclick="moveNode(1)">↓ Κάτω</button></div></div>`;
-
   if ((info.can_add||[]).length) {
-    html += '<div style="margin-bottom:10px"><label>Προσθήκη παιδιού</label><div>';
+    html += '<div class="field"><label>Προσθήκη παιδιού</label><div>';
     info.can_add.forEach(t => {
       const ti = AKN_TYPES[t]||{label:t};
       html += `<span class="add-chip" onclick='addNode(${JSON.stringify(path)},${JSON.stringify(t)})'>+ ${esc(ti.label)}</span>`;
     });
     html += '</div></div>';
   }
-  html += `<button class="btn danger" style="width:100%;margin-top:6px" onclick='deleteNode(${JSON.stringify(path)})'>✕ Διαγραφή στοιχείου</button>`;
-  html += `<p class="muted" style="font-size:11px;margin-top:12px">Το κείμενο (αριθμός, επικεφαλίδα, περιεχόμενο) επεξεργάζεται απευθείας στο κεντρικό παράθυρο.</p>`;
+  html += `<button class="btn danger" style="width:100%;margin-top:6px" onclick='deleteNode(${JSON.stringify(path)})'>✕ Διαγραφή</button>`;
+  html += `<p class="muted" style="font-size:11px;margin-top:12px">Το κείμενο επεξεργάζεται απευθείας στο κεντρικό παράθυρο.</p>`;
   p.innerHTML = html;
-
   const na = document.getElementById('el-name_attr');
   if (na) na.addEventListener('input', () => { getNodeAt(selectedPath).name_attr = na.value; autoSave(); });
 }
