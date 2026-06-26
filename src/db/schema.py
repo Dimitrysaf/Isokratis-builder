@@ -42,9 +42,17 @@ def create_schema(db_path: str) -> None:
     )
 
     if needs_rebuild:
-        c.executescript("""
-            ALTER TABLE documents RENAME TO _documents_old;
+        # The legacy table may predate `instrument_type` and/or `content`, so
+        # build the SELECT from only the columns that actually exist — a literal
+        # default fills any that are missing. Referencing an absent column in
+        # the SELECT would raise "no such column".
+        has_itype   = "instrument_type" in existing
+        has_content = "content" in existing
+        itype_expr   = "COALESCE(instrument_type, 'nomos')" if has_itype else "'nomos'"
+        content_expr = "content" if has_content else "NULL"
 
+        c.execute("ALTER TABLE documents RENAME TO _documents_old")
+        c.execute("""
             CREATE TABLE documents (
                 doc_id          TEXT PRIMARY KEY,
                 title           TEXT NOT NULL,
@@ -52,16 +60,14 @@ def create_schema(db_path: str) -> None:
                 created_at      TEXT,
                 updated_at      TEXT,
                 content         TEXT
-            );
-
-            INSERT INTO documents (doc_id, title, instrument_type, created_at, updated_at, content)
-            SELECT doc_id, title,
-                   COALESCE(instrument_type, 'nomos'),
-                   created_at, updated_at, content
-            FROM   _documents_old;
-
-            DROP TABLE _documents_old;
+            )
         """)
+        c.execute(f"""
+            INSERT INTO documents (doc_id, title, instrument_type, created_at, updated_at, content)
+            SELECT doc_id, title, {itype_expr}, created_at, updated_at, {content_expr}
+            FROM   _documents_old
+        """)
+        c.execute("DROP TABLE _documents_old")
     else:
         # Additive migrations only — add columns that may be missing
         for col, defn in [
