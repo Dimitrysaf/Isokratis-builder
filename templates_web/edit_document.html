@@ -367,9 +367,9 @@ function editable(field, path, val, cls, ph) {
   return d;
 }
 function renderEl(node, path) {
-  const info = AKN_TYPES[node.type] || {fields:[], label:node.type};
+  const info = AKN_TYPES[node.akn_type] || {fields:[], label:node.akn_type};
   const wrap = document.createElement('div');
-  wrap.className = 'akn-el akn-' + node.type;
+  wrap.className = 'akn-el akn-' + node.akn_type;
   wrap.dataset.path = JSON.stringify(path);
   if (selectedPath && JSON.stringify(selectedPath) === JSON.stringify(path)) wrap.classList.add('selected');
   wrap.addEventListener('click', e => { e.stopPropagation(); selectNode(path); });
@@ -389,7 +389,7 @@ function renderEl(node, path) {
   // self line
   const self = document.createElement('div'); self.className = 'akn-self';
   const flds = info.fields || [];
-  const isHeadingEl = ['part','chapter','section','article','hcontainer'].includes(node.type);
+  const isHeadingEl = ['part','chapter','section','article','hcontainer'].includes(node.akn_type);
 
   if (isHeadingEl) {
     const h = document.createElement('div'); h.className = 'h';
@@ -426,7 +426,7 @@ function renderTOC() {
   renderRootAdd();
 }
 function tocNode(node, path) {
-  const info = AKN_TYPES[node.type] || {label:node.type};
+  const info = AKN_TYPES[node.akn_type] || {label:node.akn_type};
   const wrap = document.createElement('div'); wrap.className = 'toc-node';
   const row = document.createElement('div');
   row.className = 'toc-row' + (selectedPath && JSON.stringify(selectedPath)===JSON.stringify(path) ? ' selected':'');
@@ -465,7 +465,7 @@ function selectNode(path, scroll=true) {
 }
 function renderElPanel(path) {
   const node = getNodeAt(path); if (!node) return;
-  const info = AKN_TYPES[node.type] || {fields:[], can_add:[], label:node.type};
+  const info = AKN_TYPES[node.akn_type] || {fields:[], can_add:[], label:node.akn_type};
   const p = document.getElementById('s-el');
   let html = `<h3 style="margin:0 0 4px;font-size:14px">${esc(info.label)}</h3>
     <div class="muted" style="font-size:11px;margin-bottom:12px">Διαδρομή: ${path.join(' › ')}</div>`;
@@ -498,7 +498,7 @@ function renderElPanel(path) {
 // ── mutations ─────────────────────────────────────────────────────────────────
 function addNode(parentPath, type) {
   const info = AKN_TYPES[type] || {fields:[]};
-  const n = { type, children: [] };
+  const n = { akn_type: type, children: [] };
   (info.fields||[]).forEach(f => n[f] = '');
   if (!parentPath || !parentPath.length) {
     (docState.body = docState.body||[]).push(n);
