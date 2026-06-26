@@ -13,8 +13,8 @@ Priority: `P0` = blocking · `P1` = important · `P2` = later · `P3` = polish.
 - ✅ `make_sample.py` → `sample.xml` reports **VALID** against the **authentic** schema.
 - ✅ **A1-FIX RESOLVED** — `schema/akomantoso30.xsd` is now the real multi-file AKN 3.0
   schema (315 elements, `xsd:import` > 0) from the `io.legaldocml` Maven artifact.
-- ✅ A4-FIX, A5, B1–B4, C1–C3, D1–D2, E1–E3 all done (see checkboxes below).
-- 🔜 Remaining: D3 (optional AKN import / reverse renderer).
+- ✅ A4-FIX, A5, B1–B4, C1–C3, D1–D3, E1–E3 all done (see checkboxes below).
+- 🎉 All TODO tasks complete (including optional D3 AKN import). 6/6 tests pass.
 
 ---
 
@@ -112,9 +112,12 @@ Priority: `P0` = blocking · `P1` = important · `P2` = later · `P3` = polish.
   NOT nest `<ref>` in `<ref>`.
 - **Done when:** One amendment exports as valid `<textualMod>`.
 
-### [ ] D3 · `P3` · (Optional) AKN import (reverse renderer)
+### [x] D3 · `P3` · (Optional) AKN import (reverse renderer)
 - Only if you want "open an existing `.akn.xml`" / AKN-as-native.
 - **Done when:** `render(import(golden)) == golden` (round-trips).
+- **Done:** `src/renderers/xml_importer.py` (`AkomaNtosoImporter`). `test_import_roundtrip`
+  asserts `render(import(golden)) == golden`, modulo the FRBRManifestation
+  *Generation* date (a render-time timestamp, inherently "now", not source data).
 
 ---
 
