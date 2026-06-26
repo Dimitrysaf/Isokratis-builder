@@ -42,29 +42,35 @@
   .toc-children { margin-left: 13px; border-left: 1px solid var(--border); padding-left: 4px; }
   .toc-add { padding: 8px 10px; border-top: 1px solid var(--border); }
 
-  /* ── CENTER: the legal document ────────────────────────────────────────── */
-  .doc-pane { background: #e7ebed; }
+  /* ── CENTER: the legal document (LEOS-style) ───────────────────────────── */
+  .doc-pane { background: #cfd6da; }
   .doc-toolbar {
-    padding: 7px 14px; border-bottom: 1px solid var(--border); background: var(--panel);
+    padding: 6px 14px; border-bottom: 1px solid var(--border);
+    background: linear-gradient(var(--panel), #f3f6f7);
     display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
   }
-  .doc-scroll { overflow-y: auto; flex: 1; padding: 28px 0 80px; }
+  .doc-scroll { overflow-y: auto; flex: 1; padding: 30px 0 100px; }
   .doc-sheet {
-    background: #fff; max-width: 720px; margin: 0 auto; padding: 48px 60px 48px 88px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.12); border-radius: 2px;
-    font-family: "Georgia", "Times New Roman", serif; color: #1a1a1a;
-    font-size: 15px; line-height: 1.65;
+    background: #fff; max-width: 760px; margin: 0 auto; padding: 56px 72px 64px 96px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    font-family: "Arial", "Helvetica Neue", -apple-system, sans-serif; color: #222;
+    font-size: 14.5px; line-height: 1.7; text-align: justify;
   }
-  .doc-title { text-align: center; font-weight: 700; font-size: 17px; margin: 0 0 6px; }
-  .doc-subtitle { text-align: center; color: #555; font-size: 13px; margin: 0 0 28px;
-                  font-family: -apple-system, Segoe UI, sans-serif; }
+  /* document header block (act title) — LEOS shows it boxed at top */
+  .doc-title { text-align: center; font-weight: 700; font-size: 18px; margin: 0 0 4px;
+               letter-spacing: .01em; }
+  .doc-subtitle { text-align: center; color: #444; font-size: 13px; margin: 0 0 8px; font-weight: 600; }
+  .doc-headrule { border: none; border-top: 2px solid var(--accent); width: 64px; margin: 14px auto 34px; }
 
-  /* element wrappers */
-  .akn-el { position: relative; margin: 0 0 4px; padding: 2px 6px; border-radius: 4px; }
-  .akn-el.selected { background: #fbf4e6; box-shadow: inset 0 0 0 1px #d9b870; }
+  /* element wrappers — LEOS active-edit bar on the left */
+  .akn-el { position: relative; margin: 0 0 6px; padding: 3px 8px 3px 10px;
+            border-left: 3px solid transparent; transition: background .1s, border-color .1s; }
+  .akn-el:hover { background: #f4f8f8; border-left-color: var(--accent-soft); }
+  .akn-el.selected { background: #eef6f5; border-left-color: var(--accent); }
   .akn-el:hover > .akn-gutter { opacity: 1; }
   .akn-gutter {
-    position: absolute; left: -74px; top: 1px; display: flex; gap: 2px;
+    position: absolute; left: -78px; top: 1px; display: flex; gap: 2px;
     opacity: 0; transition: opacity .12s;
   }
   .akn-gutter button {
@@ -74,22 +80,25 @@
   }
   .akn-gutter button:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* headings by hierarchy level */
-  .akn-part   > .akn-self .h { text-align: center; font-weight: 700; font-size: 16px; margin-top: 22px; }
-  .akn-chapter > .akn-self .h { text-align: center; font-weight: 700; font-size: 15px; margin-top: 18px; }
-  .akn-section > .akn-self .h { text-align: center; font-weight: 600; font-size: 14px; margin-top: 14px; }
-  .akn-article > .akn-self .h { text-align: center; font-weight: 700; margin-top: 22px; }
+  /* headings by hierarchy level — LEOS centres part/chapter/article headings */
+  .akn-part    > .akn-self .h { text-align: center; font-weight: 700; font-size: 15px; margin-top: 26px; text-transform: uppercase; letter-spacing: .04em; }
+  .akn-chapter > .akn-self .h { text-align: center; font-weight: 700; font-size: 14px; margin-top: 20px; text-transform: uppercase; }
+  .akn-section > .akn-self .h { text-align: center; font-weight: 600; font-size: 14px; margin-top: 16px; }
+  .akn-article > .akn-self .h { text-align: center; margin-top: 26px; }
+  .akn-article > .akn-self .h .akn-num { display: block; font-weight: 700; font-size: 14.5px; }
+  .akn-article > .akn-self .h .akn-heading { display: block; font-weight: 700; font-style: normal; margin-top: 1px; }
   .akn-self { }
   .akn-num { font-weight: 700; }
-  .akn-heading { }
-  .akn-self .h { margin-bottom: 4px; }
+  .akn-self .h { margin-bottom: 6px; }
   .akn-self .h .akn-heading { display: block; font-weight: 600; }
 
-  .akn-paragraph > .akn-self { display: flex; gap: 8px; }
-  .akn-paragraph > .akn-self .akn-num { min-width: 26px; }
-  .akn-point, .akn-indent { }
-  .akn-point > .akn-self, .akn-indent > .akn-self { display: flex; gap: 8px; }
-  .akn-point > .akn-self .akn-num, .akn-indent > .akn-self .akn-num { min-width: 30px; }
+  /* paragraphs: number in the margin, justified body (LEOS) */
+  .akn-paragraph > .akn-self { display: flex; gap: 10px; }
+  .akn-paragraph > .akn-self .akn-num { min-width: 22px; flex-shrink: 0; }
+  .akn-paragraph > .akn-self .akn-content { flex: 1; text-align: justify; }
+  .akn-point > .akn-self, .akn-indent > .akn-self { display: flex; gap: 10px; }
+  .akn-point > .akn-self .akn-num, .akn-indent > .akn-self .akn-num { min-width: 26px; flex-shrink: 0; }
+  .akn-point { margin-left: 14px; } .akn-indent { margin-left: 28px; }
 
   .akn-children { margin-left: 16px; }
   .akn-article > .akn-children, .akn-part > .akn-children,
@@ -172,6 +181,7 @@
       <div class="doc-sheet">
         <div class="doc-title" id="doc-disp-title">{{ doc.title or 'Χωρίς τίτλο' }}</div>
         <div class="doc-subtitle" id="doc-disp-sub"></div>
+        <hr class="doc-headrule">
         <div id="doc-body"></div>
       </div>
     </div>
