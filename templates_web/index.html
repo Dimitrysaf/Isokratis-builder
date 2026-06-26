@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Isokratis — Έγγραφα{% endblock %}
+
+{% block topbar %}
+  <a href="{{ url_for('new_document') }}" class="btn primary" style="margin-left:auto">+ Νέο έγγραφο</a>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  {% if docs %}
+  <div class="card" style="margin-top:18px">
+    <table>
+      <thead>
+        <tr>
+          <th>Τίτλος</th>
+          <th>Τύπος</th>
+          <th>Τελευταία τροποποίηση</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in docs %}
+        <tr>
+          <td><a href="{{ url_for('edit_document', doc_id=doc.doc_id) }}">{{ doc.title or 'Χωρίς τίτλο' }}</a></td>
+          <td>
+            <span class="tag">
+              {{ instrument_types[doc.instrument_type]['label'] if doc.instrument_type in instrument_types else doc.instrument_type }}
+            </span>
+          </td>
+          <td class="muted">{{ doc.updated_at[:16].replace('T', ' ') if doc.updated_at else '—' }}</td>
+          <td style="text-align:right">
+            <form method="post" action="{{ url_for('delete_document', doc_id=doc.doc_id) }}"
+                  onsubmit="return confirm('Διαγραφή εγγράφου;')">
+              <button type="submit" class="btn danger" style="padding:4px 10px;font-size:12px">Διαγραφή</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:60px 0;color:var(--muted)">
+    <p style="font-size:16px">Δεν υπάρχουν έγγραφα ακόμα.</p>
+    <a href="{{ url_for('new_document') }}" class="btn primary">Δημιουργία πρώτου εγγράφου</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

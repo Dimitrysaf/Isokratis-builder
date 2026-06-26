@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.title or 'Χωρίς τίτλο' }} — Isokratis{% endblock %}
+
+{% block head %}
+<style>
+  .editor-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    height: calc(100vh - 45px);
+    overflow: hidden;
+  }
+  .sidebar {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sidebar-tab {
+    flex: 1; padding: 9px 4px; text-align: center; font-size: 12px;
+    cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent;
+    background: none; border-top: none; border-left: none; border-right: none;
+    font-family: inherit;
+  }
+  .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .sidebar-pane { display: none; overflow-y: auto; flex: 1; padding: 12px; }
+  .sidebar-pane.active { display: block; }
+  .main-area {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .main-toolbar {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    background: var(--panel);
+  }
+  .split-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    flex: 1;
+    overflow: hidden;
+  }
+  .node-editor-pane, .xml-pane {
+    overflow-y: auto;
+    padding: 14px;
+  }
+  .node-editor-pane { border-right: 1px solid var(--border); }
+  .xml-pane {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px;
+    white-space: pre;
+  }
+  .tree-node {
+    padding: 5px 8px; border-radius: 5px; cursor: pointer;
+    margin: 2px 0; display: flex; align-items: center; gap: 6px;
+    font-size: 13px;
+  }
+  .tree-node:hover { background: #eef2f7; }
+  .tree-node.selected { background: #dce8f8; color: var(--accent); }
+  .tree-node .toggle { width: 14px; text-align: center; color: var(--muted); font-size: 11px; cursor: pointer; flex-shrink: 0; }
+  .tree-node .label { flex: 1; }
+  .tree-children { margin-left: 18px; border-left: 1px dashed var(--border); padding-left: 6px; }
+  .node-type-tag { font-size: 10px; background: #eef2f7; color: var(--accent); border-radius: 3px; padding: 1px 5px; }
+  .status-bar { font-size: 11px; color: var(--muted); margin-left: auto; }
+  #save-status { font-size: 12px; }
+  .version-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .version-row:last-child { border-bottom: none; }
+</style>
+{% endblock %}
+
+{% block topbar %}
+  <span style="opacity:.7;font-size:13px">{{ doc.title or 'Χωρίς τίτλο' }}</span>
+  <span id="save-status" style="margin-left:8px"></span>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <button class="btn" onclick="saveVersion()">Αποθήκευση έκδοσης</button>
+    <a href="{{ url_for('export_akn', doc_id=doc.doc_id) }}" class="btn">⬇ AKN XML</a>
+    <a href="{{ url_for('index') }}" class="btn">← Λίστα</a>
+  </div>
+{% endblock %}
+
+{% block body %}
+<div class="editor-layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" onclick="showTab('tab-meta',this)">Μεταδεδομένα</button>
+      <button class="sidebar-tab" onclick="showTab('tab-body',this)">Σώμα</button>
+      <button class="sidebar-tab" onclick="showTab('tab-versions',this)">Εκδόσεις</button>
+    </div>
+
+    <!-- Meta tab -->
+    <div id="tab-meta" class="sidebar-pane active">
+      <div class="field">
+        <label>Τίτλος εγγράφου</label>
+        <input type="text" id="f-title" value="{{ doc.title }}">
+      </div>
+      <div class="field">
+        <label>Αριθμός (FRBR)</label>
+        <input type="text" id="f-frbr_number" value="{{ doc.meta.frbr_number }}">
+      </div>
+      <div class="field">
+        <label>Έτος</label>
+        <input type="text" id="f-frbr_year" value="{{ doc.meta.frbr_year }}">
+      </div>
+      <div class="field">
+        <label>Σειρά ΦΕΚ</label>
+        <select id="f-fek_series">
+          {% for s in ['Α', 'Β', 'Γ', 'Δ', 'ΑΑΠ', 'ΥΟΔΔ', 'ΠΔΠ'] %}
+          <option {% if doc.meta.fek_series == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Αριθμός ΦΕΚ</label>
+        <input type="text" id="f-fek_number" value="{{ doc.meta.fek_number }}">
+      </div>
+      <div class="field">
+        <label>Ημερομηνία ΦΕΚ</label>
+        <input type="date" id="f-fek_date" value="{{ doc.meta.fek_date }}">
+      </div>
+      <div class="field">
+        <label>Ημερομηνία ψήφισης</label>
+        <input type="date" id="f-enacted_date" value="{{ doc.meta.enacted_date }}">
+      </div>
+      <div class="field">
+        <label>Λέξεις-κλειδιά</label>
+        <textarea id="f-keywords" rows="2">{{ doc.meta.keywords }}</textarea>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      <div class="field">
+        <label>Τύπος πράξης (preface)</label>
+        <input type="text" id="f-doc_type" value="{{ doc.preface.doc_type }}">
+      </div>
+      <div class="field">
+        <label>Αριθμός πράξης</label>
+        <input type="text" id="f-doc_number" value="{{ doc.preface.doc_number }}">
+      </div>
+      <div class="field">
+        <label>Τίτλος περιεχομένου</label>
+        <textarea id="f-doc_title" rows="3">{{ doc.preface.doc_title }}</textarea>
+      </div>
+      <div class="field">
+        <label>Ημερομηνία πράξης</label>
+        <input type="date" id="f-doc_date" value="{{ doc.preface.doc_date }}">
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      <div class="field">
+        <label>Φόρμουλα προοιμίου</label>
+        <textarea id="f-formula" rows="3">{{ doc.preamble.formula }}</textarea>
+      </div>
+      <div class="field">
+        <label>Αναφορές (citations)</label>
+        <textarea id="f-citations" rows="4">{{ doc.preamble.citations }}</textarea>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      <div class="field">
+        <label>Τόπος υπογραφής</label>
+        <input type="text" id="f-place" value="{{ doc.conclusions.place }}">
+      </div>
+      <div class="field">
+        <label>Ημερομηνία υπογραφής</label>
+        <input type="date" id="f-sign_date" value="{{ doc.conclusions.date }}">
+      </div>
+      <div class="field">
+        <label>Υπογραφές (μία ανά γραμμή)</label>
+        <textarea id="f-signatures" rows="4">{{ doc.conclusions.signatures }}</textarea>
+      </div>
+    </div>
+
+    <!-- Body tree tab -->
+    <div id="tab-body" class="sidebar-pane">
+      <div id="body-tree"></div>
+      <div style="margin-top:10px">
+        <label>Προσθήκη στη ρίζα:</label>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px" id="root-add-btns"></div>
+      </div>
+    </div>
+
+    <!-- Versions tab -->
+    <div id="tab-versions" class="sidebar-pane">
+      <div id="versions-list">
+        {% for v in versions %}
+        <div class="version-row">
+          <span class="muted">v{{ v.version_number }}</span>
+          <span style="flex:1">{{ v.note or '—' }}</span>
+          <span class="muted">{{ v.created_at[:10] }}</span>
+          <button class="btn" style="padding:3px 8px;font-size:11px"
+                  onclick="restoreVersion('{{ v.version_id }}')">Επαναφορά</button>
+        </div>
+        {% endfor %}
+        {% if not versions %}<p class="muted" style="font-size:12px">Δεν υπάρχουν αποθηκευμένες εκδόσεις.</p>{% endif %}
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px">
+        <input type="text" id="version-note" placeholder="Σχόλιο νέας έκδοσης" style="flex:1">
+        <button class="btn primary" onclick="saveVersion()">Αποθήκευση</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main area -->
+  <div class="main-area">
+    <div class="main-toolbar">
+      <span style="font-size:12px;font-weight:600;color:var(--muted)">ΕΠΕΞΕΡΓΑΣΤΗΣ ΚΟΜΒΟΥ</span>
+      <span id="node-path" class="muted" style="font-size:12px"></span>
+      <button class="btn" id="btn-preview" onclick="refreshPreview()" style="margin-left:auto">↺ Προεπισκόπηση AKN</button>
+      <button class="btn danger" id="btn-delete-node" style="display:none" onclick="deleteSelectedNode()">✕ Διαγραφή</button>
+    </div>
+    <div class="split-view">
+      <div class="node-editor-pane" id="node-editor">
+        <p class="muted" style="font-size:13px;margin-top:20px;text-align:center">
+          Επιλέξτε κόμβο από το δέντρο ή προσθέστε νέο.
+        </p>
+      </div>
+      <div class="xml-pane" id="xml-preview">
+        <span style="color:#6c7086">-- Πατήστε «Προεπισκόπηση AKN» για να δείτε το XML --</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DOC_ID = {{ doc.doc_id | tojson }};
+let docState = {{ doc_json | safe }};
+const AKN_TYPES = {{ akn_types_json | safe }};
+const BODY_ROOT_CAN_ADD = {{ body_root_can_add_json | safe }};
+
+// ── Sidebar tabs ──────────────────────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.sidebar-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Meta field sync ──────────────────────────────────────────────────────────
+function collectMeta() {
+  const g = id => (document.getElementById(id)||{}).value || '';
+  docState.title = g('f-title');
+  docState.meta.frbr_number  = g('f-frbr_number');
+  docState.meta.frbr_year    = g('f-frbr_year');
+  docState.meta.fek_series   = g('f-fek_series');
+  docState.meta.fek_number   = g('f-fek_number');
+  docState.meta.fek_date     = g('f-fek_date');
+  docState.meta.enacted_date = g('f-enacted_date');
+  docState.meta.keywords     = g('f-keywords');
+  docState.preface.doc_type   = g('f-doc_type');
+  docState.preface.doc_number = g('f-doc_number');
+  docState.preface.doc_title  = g('f-doc_title');
+  docState.preface.doc_date   = g('f-doc_date');
+  docState.preamble.formula   = g('f-formula');
+  docState.preamble.citations = g('f-citations');
+  docState.conclusions.place      = g('f-place');
+  docState.conclusions.date       = g('f-sign_date');
+  docState.conclusions.signatures = g('f-signatures');
+}
+
+document.querySelectorAll('#tab-meta input, #tab-meta select, #tab-meta textarea')
+  .forEach(el => el.addEventListener('change', () => { collectMeta(); autoSave(); }));
+
+// ── Auto-save ─────────────────────────────────────────────────────────────────
+let saveTimer = null;
+function autoSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 1200);
+}
+async function doSave() {
+  document.getElementById('save-status').textContent = '…';
+  try {
+    const r = await fetch(`/api/documents/${DOC_ID}/save`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(docState)
+    });
+    const j = await r.json();
+    document.getElementById('save-status').textContent = j.ok ? '✓ Αποθηκεύτηκε' : '⚠ Σφάλμα';
+  } catch { document.getElementById('save-status').textContent = '⚠ Αποτυχία'; }
+}
+
+// ── Versions ──────────────────────────────────────────────────────────────────
+async function saveVersion() {
+  collectMeta();
+  await doSave();
+  const note = (document.getElementById('version-note')||{}).value || '';
+  const r = await fetch(`/api/documents/${DOC_ID}/version`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({note})
+  });
+  const j = await r.json();
+  if (j.ok) renderVersionList(j.versions);
+}
+
+function renderVersionList(versions) {
+  const el = document.getElementById('versions-list');
+  if (!versions.length) { el.innerHTML = '<p class="muted" style="font-size:12px">Δεν υπάρχουν αποθηκευμένες εκδόσεις.</p>'; return; }
+  el.innerHTML = versions.map(v => `
+    <div class="version-row">
+      <span class="muted">v${v.version_number}</span>
+      <span style="flex:1">${v.note||'—'}</span>
+      <span class="muted">${(v.created_at||'').slice(0,10)}</span>
+      <button class="btn" style="padding:3px 8px;font-size:11px"
+              onclick="restoreVersion('${v.version_id}')">Επαναφορά</button>
+    </div>`).join('');
+}
+
+async function restoreVersion(vid) {
+  if (!confirm('Επαναφορά αυτής της έκδοσης; Οι μη αποθηκευμένες αλλαγές θα χαθούν.')) return;
+  const r = await fetch(`/api/documents/${DOC_ID}/restore/${vid}`, {method:'POST'});
+  const j = await r.json();
+  if (j.ok) { docState = j.doc; location.reload(); }
+}
+
+// ── AKN XML preview ───────────────────────────────────────────────────────────
+async function refreshPreview() {
+  collectMeta();
+  document.getElementById('xml-preview').textContent = '…';
+  try {
+    const r = await fetch('/api/preview/akn', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(docState)
+    });
+    const j = await r.json();
+    document.getElementById('xml-preview').textContent = j.xml || j.error || '(κενό)';
+  } catch(e) {
+    document.getElementById('xml-preview').textContent = 'Σφάλμα: ' + e;
+  }
+}
+
+// ── Body tree ─────────────────────────────────────────────────────────────────
+let selectedPath = null;   // array of indices into docState.body
+
+function renderTree() {
+  const el = document.getElementById('body-tree');
+  el.innerHTML = '';
+  if (!docState.body || !docState.body.length) {
+    el.innerHTML = '<p class="muted" style="font-size:12px">Το σώμα είναι κενό.</p>';
+  } else {
+    renderNodes(el, docState.body, []);
+  }
+  renderRootAddButtons();
+}
+
+function renderNodes(container, nodes, pathPrefix) {
+  nodes.forEach((node, i) => {
+    const path = [...pathPrefix, i];
+    const wrap = document.createElement('div');
+    const info = AKN_TYPES[node.type] || {label: node.type};
+    const isSelected = selectedPath && JSON.stringify(selectedPath) === JSON.stringify(path);
+    const hasChildren = node.children && node.children.length;
+
+    const rowEl = document.createElement('div');
+    rowEl.className = 'tree-node' + (isSelected ? ' selected' : '');
+    rowEl.innerHTML = `
+      <span class="toggle">${hasChildren ? '▾' : '·'}</span>
+      <span class="node-type-tag">${info.label}</span>
+      <span class="label" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${node.num ? node.num + ' ' : ''}${node.heading || node.content || ''}
+      </span>`;
+    rowEl.addEventListener('click', () => selectNode(path));
+    wrap.appendChild(rowEl);
+
+    if (hasChildren) {
+      const childWrap = document.createElement('div');
+      childWrap.className = 'tree-children';
+      renderNodes(childWrap, node.children, path);
+      wrap.appendChild(childWrap);
+    }
+    container.appendChild(wrap);
+  });
+}
+
+function renderRootAddButtons() {
+  const el = document.getElementById('root-add-btns');
+  el.innerHTML = '';
+  BODY_ROOT_CAN_ADD.forEach(type => {
+    const info = AKN_TYPES[type] || {label: type};
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'padding:3px 8px;font-size:11px';
+    btn.textContent = '+ ' + info.label;
+    btn.onclick = () => addNode(null, type);
+    el.appendChild(btn);
+  });
+}
+
+function getNodeAt(path) {
+  let arr = docState.body;
+  let node = null;
+  for (const idx of path) { node = arr[idx]; arr = node.children || []; }
+  return node;
+}
+
+function selectNode(path) {
+  selectedPath = path;
+  renderTree();
+  renderNodeEditor(path);
+  document.getElementById('btn-delete-node').style.display = '';
+}
+
+function renderNodeEditor(path) {
+  const node = getNodeAt(path);
+  if (!node) return;
+  const info = AKN_TYPES[node.type] || {fields:[], can_add:[], label: node.type};
+  const panel = document.getElementById('node-editor');
+  document.getElementById('node-path').textContent = path.join(' › ') + ' [' + info.label + ']';
+
+  let html = `<h3 style="margin:0 0 12px;font-size:14px">${info.label}</h3>`;
+  for (const f of (info.fields||[])) {
+    const val = (node[f] || '').replace(/"/g, '&quot;');
+    if (f === 'content' || f === 'intro' || f === 'wrap_up') {
+      html += `<div class="field"><label>${fieldLabel(f)}</label><textarea data-field="${f}" rows="4">${node[f]||''}</textarea></div>`;
+    } else {
+      html += `<div class="field"><label>${fieldLabel(f)}</label><input type="text" data-field="${f}" value="${val}"></div>`;
+    }
+  }
+  if (info.can_add && info.can_add.length) {
+    html += '<div style="margin-top:8px"><label>Προσθήκη παιδιού:</label><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">';
+    for (const t of info.can_add) {
+      const ti = AKN_TYPES[t] || {label:t};
+      html += `<button class="btn" style="padding:3px 8px;font-size:11px" onclick="addNode(${JSON.stringify(path)},${JSON.stringify(t)})">+ ${ti.label}</button>`;
+    }
+    html += '</div></div>';
+  }
+  panel.innerHTML = html;
+
+  panel.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('input', () => {
+      const n = getNodeAt(selectedPath);
+      n[el.dataset.field] = el.value;
+      autoSave();
+      renderTree();
+    });
+  });
+}
+
+function fieldLabel(f) {
+  const m = {num:'Αριθμός',heading:'Επικεφαλίδα',content:'Περιεχόμενο',
+             intro:'Εισαγωγικό κείμενο',wrap_up:'Καταληκτικό κείμενο',
+             name_attr:'Όνομα (name attr)'};
+  return m[f] || f;
+}
+
+function addNode(parentPath, type) {
+  const info = AKN_TYPES[type] || {fields:[]};
+  const newNode = {type, children: []};
+  (info.fields||[]).forEach(f => { newNode[f] = ''; });
+
+  if (!parentPath || parentPath.length === 0) {
+    if (!docState.body) docState.body = [];
+    docState.body.push(newNode);
+    selectNode([docState.body.length - 1]);
+  } else {
+    const parent = getNodeAt(parentPath);
+    if (!parent.children) parent.children = [];
+    parent.children.push(newNode);
+    selectNode([...parentPath, parent.children.length - 1]);
+  }
+  autoSave();
+  renderTree();
+}
+
+function deleteSelectedNode() {
+  if (!selectedPath || !confirm('Διαγραφή κόμβου και όλων των παιδιών του;')) return;
+  if (selectedPath.length === 1) {
+    docState.body.splice(selectedPath[0], 1);
+  } else {
+    const parentPath = selectedPath.slice(0, -1);
+    const idx = selectedPath[selectedPath.length - 1];
+    const parent = getNodeAt(parentPath);
+    parent.children.splice(idx, 1);
+  }
+  selectedPath = null;
+  document.getElementById('btn-delete-node').style.display = 'none';
+  document.getElementById('node-editor').innerHTML = '<p class="muted" style="font-size:13px;margin-top:20px;text-align:center">Επιλέξτε κόμβο από το δέντρο.</p>';
+  document.getElementById('node-path').textContent = '';
+  autoSave();
+  renderTree();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderTree();
+</script>
+{% endblock %}

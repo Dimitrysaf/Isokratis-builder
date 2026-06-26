@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act name="nomos">
+    <meta>
+      <identification source="#isokratis">
+        <FRBRWork>
+          <FRBRthis value="/gr/act/2025/4999/main"/>
+          <FRBRuri value="/gr/act/2025/4999"/>
+          <FRBRdate date="2025-06-01" name="enacted"/>
+          <FRBRauthor href="#parliament"/>
+          <FRBRcountry value="gr"/>
+          <FRBRnumber value="4999"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/gr/act/2025/4999/ell@/main"/>
+          <FRBRuri value="/gr/act/2025/4999/ell@"/>
+          <FRBRdate date="2025-06-01" name="enacted"/>
+          <FRBRauthor href="#isokratis"/>
+          <FRBRlanguage language="ell"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/gr/act/2025/4999/ell@/main.xml"/>
+          <FRBRuri value="/gr/act/2025/4999/ell@.akn"/>
+          <FRBRdate date="2026-06-25" name="Generation"/>
+          <FRBRauthor href="#isokratis"/>
+        </FRBRManifestation>
+      </identification>
+      <publication date="2025-06-05" name="ΦΕΚ" showAs="ΦΕΚ Α΄ 137/2025-06-05" number="137"/>
+      <classification source="#isokratis">
+        <keyword eId="kw_1" value="δοκιμαστική" showAs="δοκιμαστική" dictionary="#isokratis"/>
+        <keyword eId="kw_2" value="νομοθεσία" showAs="νομοθεσία" dictionary="#isokratis"/>
+      </classification>
+      <lifecycle source="#isokratis">
+        <eventRef date="2025-06-01" type="generation" source="#parliament" eId="ev_enacted"/>
+      </lifecycle>
+      <references source="#isokratis">
+        <TLCOrganization eId="parliament" href="/ontology/organization/gr/parliament" showAs="Ελληνικό Κοινοβούλιο"/>
+        <TLCOrganization eId="president" href="/ontology/organization/gr/president" showAs="Πρόεδρος της Δημοκρατίας"/>
+        <TLCOrganization eId="isokratis" href="/ontology/organization/gr/isokratis" showAs="Isokratis"/>
+      </references>
+    </meta>
+    <preface>
+      <p>
+        <docType>ΝΟΜΟΣ</docType>
+      </p>
+      <p>
+        <docNumber>ΥΠ' ΑΡΙΘΜ. 4999</docNumber>
+      </p>
+      <p>
+        <docTitle>Νόμος για τη Δοκιμαστική Νομοθεσία</docTitle>
+      </p>
+      <p>
+        <docDate date="2025-06-01">2025-06-01</docDate>
+      </p>
+    </preface>
+    <preamble>
+      <formula name="enactingFormula">
+        <p>Εκδίδομε τον ακόλουθο νόμο που ψηφίσθηκε από τη Βουλή:</p>
+      </formula>
+      <citations>
+        <citation eId="cit_1">
+          <p>Έχοντας υπόψη το άρθρο 43 παρ. 2 του Συντάγματος.</p>
+        </citation>
+        <citation eId="cit_2">
+          <p>Τον νόμο 3852/2010 (ΦΕΚ Α΄ 87).</p>
+        </citation>
+      </citations>
+    </preamble>
+    <body>
+      <article eId="art_1">
+        <num>Άρθρο 1</num>
+        <heading>Σκοπός</heading>
+        <paragraph eId="art_1__para_1">
+          <num>1.</num>
+          <content>
+            <p>Σκοπός του παρόντος νόμου είναι η δοκιμαστική νομοθεσία.</p>
+          </content>
+        </paragraph>
+        <paragraph eId="art_1__para_2">
+          <num>2.</num>
+          <content>
+            <p>Οι διατάξεις ισχύουν από τη δημοσίευσή τους στην Εφημερίδα της Κυβερνήσεως.</p>
+          </content>
+        </paragraph>
+      </article>
+      <article eId="art_2">
+        <num>Άρθρο 2</num>
+        <heading>Έναρξη ισχύος</heading>
+        <paragraph eId="art_2__para_1">
+          <num>1.</num>
+          <content>
+            <p>Ο παρών νόμος ισχύει από την ημερομηνία δημοσίευσής του στην Εφημερίδα της Κυβερνήσεως.</p>
+          </content>
+        </paragraph>
+      </article>
+    </body>
+    <conclusions>
+      <p>Αθήνα, 2025-06-01</p>
+      <block name="signature">
+        <signature>Ο Πρόεδρος της Δημοκρατίας</signature>
+      </block>
+      <block name="signature">
+        <signature>ΚΩΝΣΤΑΝΤΙΝΟΣ ΠΑΠΑΔΟΠΟΥΛΟΣ</signature>
+      </block>
+    </conclusions>
+  </act>
+</akomaNtoso>

@@ -23,10 +23,14 @@ build/
 
 # Exported / temp files
 /tmp/
-*.html
 *.tex
-*.xml
 *.pdf
+
+# HTML files only at repo root (not templates)
+/*.html
+
+# XML files only at repo root (not schema)
+/*.xml
 
 # Project meta docs
 PROJECT_SUMMARY.md

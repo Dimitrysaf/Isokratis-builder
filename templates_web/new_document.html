@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Νέο έγγραφο — Isokratis{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width:520px">
+  <h2 style="margin:24px 0 18px;font-size:17px">Νέο νομοθετικό έγγραφο</h2>
+  <div class="card" style="padding:20px">
+    <form method="post" action="{{ url_for('new_document') }}">
+      <div class="field">
+        <label for="title">Τίτλος</label>
+        <input type="text" id="title" name="title" placeholder="π.χ. Νόμος για την κοινωνική ασφάλιση" autofocus>
+      </div>
+      <div class="field">
+        <label for="instrument_type">Τύπος εγγράφου</label>
+        <select id="instrument_type" name="instrument_type">
+          {% for key, info in instrument_types.items() %}
+          <option value="{{ key }}" {% if key == 'nomos' %}selected{% endif %}>{{ info['label'] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button type="submit" class="btn primary">Δημιουργία</button>
+        <a href="{{ url_for('index') }}" class="btn">Άκυρο</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

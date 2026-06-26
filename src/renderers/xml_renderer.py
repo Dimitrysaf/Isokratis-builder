@@ -267,6 +267,14 @@ class AkomaNtosoRenderer(BaseRenderer):
             counters: dict[str, int] = {}
             for node in doc.body:
                 self._node(body_el, node, parent_eid="", counters=counters)
+        else:
+            # Both <body> and <mainBody> require at least one hierarchical child.
+            # An export with no articles yet still has to be schema-valid, so emit
+            # a single empty placeholder container.
+            ph = etree.SubElement(body_el, AKN + "hcontainer",
+                                  eId="hcontainer_1", name="placeholder")
+            cnt = etree.SubElement(ph, AKN + "content")
+            etree.SubElement(cnt, AKN + "p").text = " "
 
     def _node(
         self,
@@ -312,59 +320,87 @@ class AkomaNtosoRenderer(BaseRenderer):
         for child in children:
             self._node(el, child, eid, child_counters)
 
-        # §5.5/5.6 content
+        # §5.5/5.6 — the AKN `hierarchy` content model is a strict either/or:
+        #   container : intro?, (sub-elements)*, wrapUp?   (NO direct <content>)
+        #   leaf      : exactly one <content>              (NO intro/children/wrapUp)
+        # Mixing the two (e.g. <intro> beside <content>, or a bare <p>) is
+        # rejected by the official schema, so pick exactly one branch.
         content_val = (node.get("content") or "").strip()
-        if content_val and not children:
+        wrapup_val  = (node.get("wrap_up") or "").strip()
+
+        if children or intro_val or wrapup_val:
+            # container branch — free text becomes an <alinea> leaf, since a
+            # container may not hold a direct <content>.
+            if content_val:
+                alinea = etree.SubElement(el, AKN + "alinea", eId=f"{eid}__alinea_1")
+                cnt = etree.SubElement(alinea, AKN + "content")
+                _p(cnt, content_val)
+            if wrapup_val:
+                wu = etree.SubElement(el, AKN + "wrapUp")
+                _p(wu, wrapup_val)
+        elif content_val:
+            # leaf branch
             cnt = etree.SubElement(el, AKN + "content")
             _p(cnt, content_val)
-        elif content_val and children:
-            alinea = etree.SubElement(el, AKN + "alinea", eId=f"{eid}__alinea_1")
-            _p(alinea, content_val)
-
-        # §5.5 wrapUp
-        wrapup_val = (node.get("wrap_up") or "").strip()
-        if wrapup_val and children:
-            wu = etree.SubElement(el, AKN + "wrapUp")
-            _p(wu, wrapup_val)
-
-        # Ensure leaves have at least <content><p/></content>
-        is_structural = akn_type in ("part", "chapter", "section", "list", "hcontainer")
-        if not children and not content_val and not is_structural:
-            cnt = etree.SubElement(el, AKN + "content")
-            p_el = etree.SubElement(cnt, AKN + "p")
-            p_el.text = "\u00a0"   # non-breaking space — not an empty element
+        else:
+            # Empty: structural containers may be legally empty; leaf elements
+            # get a placeholder <content> so they are not bare.
+            is_structural = akn_type in (
+                "part", "chapter", "section", "subsection",
+                "list", "hcontainer", "title",
+            )
+            if not is_structural:
+                cnt = etree.SubElement(el, AKN + "content")
+                p_el = etree.SubElement(cnt, AKN + "p")
+                p_el.text = "\u00a0"   # non-breaking space — not an empty element
 
         return el
 
     # ── §5.9 Analysis / amendments ────────────────────────────────────────────
 
     def _analysis(self, meta_el: etree._Element, amendments: list[dict]) -> None:
-        """Render passiveModifications into <analysis> (§5.9)."""
+        """Render passiveModifications into <analysis> (§5.9).
+
+        Per the authentic AKN 3.0 schema (modificationType / anyOtherType):
+
+        * ``source`` and ``destination`` are **empty** elements that carry the
+          reference in their ``@href`` attribute — they do NOT contain a nested
+          ``<ref>`` (that earlier assumption was wrong; the official XSD rejects
+          any child in the AKN namespace here).
+        * ``old`` / ``new`` have an open ``##other`` content model: they hold the
+          before/after text "in some non-managed form" and may contain only
+          *foreign-namespace* elements (no AKN children, no bare text).  We wrap
+          the text in an XHTML ``<p>`` so it is preserved losslessly and still
+          validates (processContents="lax").
+        """
         if not amendments:
             return
+        XHTML = "http://www.w3.org/1999/xhtml"
         analysis_el = etree.SubElement(meta_el, AKN + "analysis", source="#isokratis")
         pm_el = etree.SubElement(analysis_el, AKN + "passiveModifications")
         for i, amd in enumerate(amendments, 1):
             mod_type = amd.get("type", "substitution")
             mod_el = etree.SubElement(pm_el, AKN + "textualMod",
                                       eId=f"mod_{i}", type=mod_type)
-            # source — exactly ONE <ref>
-            src_el = etree.SubElement(mod_el, AKN + "source")
-            etree.SubElement(src_el, AKN + "ref",
-                             href=amd.get("source_href", ""),
-                             ).text = amd.get("source_label", "")
-            # destination
-            dst_el = etree.SubElement(mod_el, AKN + "destination")
-            etree.SubElement(dst_el, AKN + "ref",
-                             href=amd.get("dest_href", ""),
-                             ).text = amd.get("dest_label", "")
-            # old / new text
+            # source — empty element, reference carried by @href (required 1..*)
+            src_attrs = {}
+            if amd.get("source_href"):
+                src_attrs["href"] = amd["source_href"]
+            etree.SubElement(mod_el, AKN + "source", **src_attrs)
+            # destination — empty element, reference carried by @href (required 1..*)
+            dst_attrs = {}
+            if amd.get("dest_href"):
+                dst_attrs["href"] = amd["dest_href"]
+            etree.SubElement(mod_el, AKN + "destination", **dst_attrs)
+            # old / new — foreign-namespace (##other) content only
             old_text = amd.get("old_text", "")
             new_text = amd.get("new_text", "")
             if old_text:
-                etree.SubElement(mod_el, AKN + "old").text = old_text
+                old_el = etree.SubElement(mod_el, AKN + "old")
+                etree.SubElement(old_el, f"{{{XHTML}}}p").text = old_text
             if new_text:
-                etree.SubElement(mod_el, AKN + "new").text = new_text
+                new_el = etree.SubElement(mod_el, AKN + "new")
+                etree.SubElement(new_el, f"{{{XHTML}}}p").text = new_text
 
     # ── §5.10 Conclusions ─────────────────────────────────────────────────────
 
@@ -382,6 +418,10 @@ class AkomaNtosoRenderer(BaseRenderer):
         if place or dt:
             loc = ", ".join(filter(None, [place, dt]))
             _p(concl_el, loc)
+        # <signature> is an *inline* element (ANheaderInline); it cannot be a
+        # direct child of conclusions, which only accepts block elements.
+        # Wrap each in a generic <block name="signature"> per AKN 3.0.
         for sig in sig_lines:
-            sig_el = etree.SubElement(concl_el, AKN + "signature")
-            _p(sig_el, sig)
+            block_el = etree.SubElement(concl_el, AKN + "block", name="signature")
+            sig_el = etree.SubElement(block_el, AKN + "signature")
+            _mixed(sig_el, sig)
