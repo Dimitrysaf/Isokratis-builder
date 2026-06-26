@@ -2,8 +2,10 @@
 
 from .base import BaseRenderer
 from .xml_renderer import AkomaNtosoRenderer
+from .xml_importer import AkomaNtosoImporter
 
 __all__ = [
     "BaseRenderer",
     "AkomaNtosoRenderer",
+    "AkomaNtosoImporter",
 ]

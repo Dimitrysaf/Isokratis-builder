@@ -11,7 +11,7 @@ Web application for authoring Greek legislative documents in **Akoma Ntoso 3.0**
 | **Hierarchy** | part · chapter · section · article · paragraph · subparagraph · list · point · indent · hcontainer |
 | **Inline refs** | `{{href\|label}}` in content → `<ref href="…">label</ref>` |
 | **Amendments** | Structured `textualMod` records → `<analysis><passiveModifications>` |
-| **Schema** | Validated against local AKN 3.0 XSD (`schema/akomantoso30.xsd`) |
+| **Schema** | Validated against the authentic AKN 3.0 XSD (`schema/akomantoso30.xsd`, 315 elements, bundled from the `io.legaldocml` Maven artifact) |
 | **Storage** | SQLite at `~/.isokratis/documents.db` with version history |
 | **Editor** | LEOS-style: outline panel / document canvas / properties panel |
 
@@ -44,7 +44,8 @@ python tests/test_renderer.py
 ├── make_sample.py                 Build sample.xml for validation smoke-test
 ├── validate.py                    CLI XSD validator (lxml)
 ├── schema/
-│   └── akomantoso30.xsd           AKN 3.0 profile schema (written from spec)
+│   ├── akomantoso30.xsd           Authentic AKN 3.0 XSD (from io.legaldocml Maven artifact)
+│   └── xml.xsd                    Imported xml namespace schema
 ├── src/
 │   ├── models/
 │   │   ├── document.py            Document dataclass + INSTRUMENT_TYPES + AKN_TYPES
@@ -85,17 +86,19 @@ The renderer converts this to:
 
 ## Amendments (D2)
 
-In the editor, click **Τροποποιήσεις** in the outline to add `textualMod` records.  
-Each record becomes:
+Amendment records stored on a document (`doc.amendments`) render under
+`<analysis>`. Per the AKN 3.0 content models, `<source>`/`<destination>` are
+empty elements carrying `@href`, and `<old>`/`<new>` wrap their text in an
+XHTML `<p>` (they admit only foreign-namespace content, no bare text):
 
 ```xml
 <analysis source="#isokratis">
   <passiveModifications>
     <textualMod eId="mod_1" type="substitution">
-      <source><ref href="…">Ν. 3000/2020 άρ. 1</ref></source>
-      <destination><ref href="…">Ν. 1234/2025 άρ. 1 παρ. 1</ref></destination>
-      <old>Παλαιό κείμενο.</old>
-      <new>Νέο κείμενο.</new>
+      <source href="…"/>
+      <destination href="…"/>
+      <old><p xmlns="http://www.w3.org/1999/xhtml">Παλαιό κείμενο.</p></old>
+      <new><p xmlns="http://www.w3.org/1999/xhtml">Νέο κείμενο.</p></new>
     </textualMod>
   </passiveModifications>
 </analysis>

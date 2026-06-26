@@ -31,11 +31,14 @@ custom node/document model (`src/models`) · AKN renderer (`src/renderers/xml_re
 - ✅ **B2 passes** — create → save to SQLite → restart process → reload works. Durable.
 - ✅ **B3 passes** — export reaches the live document; AKN output matches the doc (no more empty file).
 - ✅ Renderer produces well-formed AKN: FRBR triple, ΦΕΚ `publication`, hierarchical `eId`s, inline refs via `{{href|label}}`.
-- 🚫 **A1-FIX is BLOCKED** — the official AKN 3.0 XSD is unreachable here: all
-  OASIS/GitHub URLs return 404. The current `schema/akomantoso30.xsd` is a
-  **hand-written subset from the spec**, NOT the authoritative schema.
-- 🔜 Next: obtain the **authentic** XSD via a non-404 route (see rules), then
-  re-validate, fix new errors, lock a golden file.
+- ✅ **A1-FIX RESOLVED** — `schema/akomantoso30.xsd` is now the **authentic** AKN 3.0
+  XSD bundled from the `io.legaldocml:legaldocml-test` Maven artifact (315 distinct
+  element names, 1 `xsd:import` → `xml.xsd`). Not hand-authored. See `.agents/memory/akn-xsd-local.md`.
+- ✅ **A4-FIX RESOLVED** — `sample.xml` validates VALID against the authentic schema;
+  fixed signature placement, hierarchy either/or, alinea content model, amendment model.
+- ✅ **A5 done** — golden file `tests/golden/nomos_min.akn.xml` locked, validates against the authentic schema.
+- ✅ Renderer is lxml-based (C1); escaping/edge cases pass (C2); εδάφιο/περίπτωση mapping fixed (C3).
+- 🔜 Remaining: optional D3 (AKN import / reverse renderer); broader UI for amendments.
 
 ## HARD RULES (do not violate)
 

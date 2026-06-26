@@ -16,16 +16,19 @@
 - **Milestone reached:** B2 (durable SQLite round-trip) and B3 (export matches live
   doc) both PASS. The empty-export bug and the data-durability problem are resolved.
 
-## OPEN BLOCKER
+## A1-FIX — RESOLVED (was the open blocker)
 
-- **A1-FIX (official XSD) is BLOCKED.** `schema/akomantoso30.xsd` is a hand-written
-  ~94-element subset, NOT the real schema. It catches gross errors only; a `VALID`
-  against it does NOT prove standard conformance.
-- **Resolve by:** pulling the authentic XSD from a real artifact (akomantoso-lib /
-  Maven / a PyPI/npm AKN package that bundles the schema) — never a raw GitHub URL,
-  never a self-authored schema. Verify multi-file (`xs:import` > 0), ~310 elements.
-- **Until resolved:** do NOT lock a golden file; validate well-formedness + diff
-  against the real LegalParser sample (`law_4330_2015.xml`) as an honest interim.
+- **Authentic XSD obtained.** `schema/akomantoso30.xsd` is now the real AKN 3.0
+  schema bundled from the `io.legaldocml:legaldocml-test:0.5.0` Maven artifact
+  (`repo1.maven.org`). 315 distinct element names, 1 `xsd:import` (`xml.xsd`),
+  `xsd:` prefix, targetNamespace `…/ns/akn/3.0`. Authored by F. Vitali et al.
+- **Acquisition route:** OASIS docs host + raw GitHub URLs 404; Maven Central
+  (`repo1.maven.org/maven2/io/legaldocml/`) is reachable — pulled the jar, extracted
+  `xsd/akomantoso30.xsd` + `xsd/xml.xsd`. This satisfies the hard rule (real artifact,
+  not self-authored, not a raw GitHub URL).
+- **Golden file locked** (`tests/golden/nomos_min.akn.xml`) — validates against this
+  authentic schema. A4-FIX errors (signature/inline, hierarchy either/or, alinea,
+  amendment model) all fixed; all 5 renderer tests pass.
 
 ## DISCIPLINE NOTE
 

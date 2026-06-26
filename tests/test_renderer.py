@@ -162,6 +162,32 @@ def test_golden_file():
     print("PASS  test_golden_file")
 
 
+def test_import_roundtrip():
+    """D3: render(import(golden)) reproduces the golden, modulo the volatile
+    FRBRManifestation Generation date (a render-time timestamp, not source data)."""
+    if not GOLDEN_PATH.exists():
+        print(f"SKIP  test_import_roundtrip (file not found: {GOLDEN_PATH})")
+        return
+    import re
+    from src.renderers.xml_importer import AkomaNtosoImporter
+    golden = GOLDEN_PATH.read_text(encoding="utf-8")
+    doc    = AkomaNtosoImporter().import_document(golden)
+    out    = AkomaNtosoRenderer().render(doc)
+
+    def norm(s: str) -> str:
+        return re.sub(r'(date=")\d{4}-\d{2}-\d{2}("\s+name="Generation")', r"\g<1>X\g<2>", s)
+
+    g, o = norm(golden), norm(out)
+    if g != o:
+        gl, ol = g.splitlines(), o.splitlines()
+        for i, (a, b) in enumerate(zip(gl, ol)):
+            if a != b:
+                print(f"  first diff at line {i+1}:\n    golden: {a!r}\n    out:    {b!r}")
+                break
+    assert g == o, "import→render did not reproduce the golden file"
+    print("PASS  test_import_roundtrip")
+
+
 if __name__ == "__main__":
     tests = [
         test_nomos_validates,
@@ -169,6 +195,7 @@ if __name__ == "__main__":
         test_amendments_validate,
         test_edge_cases_validate,
         test_golden_file,
+        test_import_roundtrip,
     ]
     failures = []
     for t in tests:
