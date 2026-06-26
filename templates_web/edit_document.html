@@ -50,7 +50,7 @@
   }
   .doc-scroll { overflow-y: auto; flex: 1; padding: 28px 0 80px; }
   .doc-sheet {
-    background: #fff; max-width: 720px; margin: 0 auto; padding: 48px 60px;
+    background: #fff; max-width: 720px; margin: 0 auto; padding: 48px 60px 48px 88px;
     box-shadow: 0 1px 4px rgba(0,0,0,.12); border-radius: 2px;
     font-family: "Georgia", "Times New Roman", serif; color: #1a1a1a;
     font-size: 15px; line-height: 1.65;
@@ -64,7 +64,7 @@
   .akn-el.selected { background: #fbf4e6; box-shadow: inset 0 0 0 1px #d9b870; }
   .akn-el:hover > .akn-gutter { opacity: 1; }
   .akn-gutter {
-    position: absolute; left: -34px; top: 1px; display: flex; gap: 2px;
+    position: absolute; left: -74px; top: 1px; display: flex; gap: 2px;
     opacity: 0; transition: opacity .12s;
   }
   .akn-gutter button {
@@ -256,6 +256,7 @@ let docState = {{ doc_json | safe }};
 const AKN_TYPES = {{ akn_types_json | safe }};
 const BODY_ROOT_CAN_ADD = {{ body_root_can_add_json | safe }};
 let selectedPath = null;
+const collapsed = new Set();   // TOC collapse state (LEOS-style)
 
 // ── tabs ──────────────────────────────────────────────────────────────────────
 function showSide(id, btn) {
@@ -374,8 +375,15 @@ function renderEl(node, path) {
   if (selectedPath && JSON.stringify(selectedPath) === JSON.stringify(path)) wrap.classList.add('selected');
   wrap.addEventListener('click', e => { e.stopPropagation(); selectNode(path); });
 
-  // gutter (add child / delete)
+  // gutter (edit pencil / add child / delete) — LEOS hover affordance
   const gut = document.createElement('div'); gut.className = 'akn-gutter';
+  const pen = document.createElement('button'); pen.textContent = '✎'; pen.title = 'Επεξεργασία';
+  pen.onclick = e => {
+    e.stopPropagation();
+    const ed = wrap.querySelector('[contenteditable]');
+    if (ed) ed.focus(); else selectNode(path);
+  };
+  gut.appendChild(pen);
   if ((info.can_add||[]).length) {
     const b = document.createElement('button'); b.textContent = '+'; b.title = 'Προσθήκη παιδιού';
     b.onclick = e => { e.stopPropagation(); selectNode(path); showSide('s-el', document.querySelector('[data-tab=s-el]')); };
@@ -427,16 +435,27 @@ function renderTOC() {
 }
 function tocNode(node, path) {
   const info = AKN_TYPES[node.akn_type] || {label:node.akn_type};
+  const key  = JSON.stringify(path);
   const wrap = document.createElement('div'); wrap.className = 'toc-node';
   const row = document.createElement('div');
-  row.className = 'toc-row' + (selectedPath && JSON.stringify(selectedPath)===JSON.stringify(path) ? ' selected':'');
+  row.className = 'toc-row' + (selectedPath && JSON.stringify(selectedPath)===key ? ' selected':'');
   const has = node.children && node.children.length;
-  row.innerHTML = `<span class="toc-toggle">${has?'▾':'·'}</span>
-    <span class="toc-tag">${esc(info.label)}</span>
-    <span class="toc-label">${esc(node.num||'')} ${esc(node.heading||node.content||'')}</span>`;
-  row.onclick = () => selectNode(path);
+  const isCol = collapsed.has(key);
+  const tog = document.createElement('span');
+  tog.className = 'toc-toggle';
+  tog.textContent = has ? (isCol ? '▸' : '▾') : '·';
+  if (has) tog.onclick = e => {           // LEOS-style collapse/expand
+    e.stopPropagation();
+    isCol ? collapsed.delete(key) : collapsed.add(key);
+    renderTOC();
+  };
+  const tag = document.createElement('span'); tag.className = 'toc-tag'; tag.textContent = info.label;
+  const lbl = document.createElement('span'); lbl.className = 'toc-label';
+  lbl.textContent = `${node.num||''} ${node.heading||node.content||''}`;
+  row.append(tog, tag, lbl);
+  row.addEventListener('click', () => selectNode(path));
   wrap.appendChild(row);
-  if (has) {
+  if (has && !isCol) {
     const c = document.createElement('div'); c.className = 'toc-children';
     node.children.forEach((ch,i) => c.appendChild(tocNode(ch,[...path,i])));
     wrap.appendChild(c);
